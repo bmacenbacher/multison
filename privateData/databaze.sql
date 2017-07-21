@@ -3,11 +3,13 @@
 -- http://www.phpmyadmin.net
 --
 -- Počítač: 127.0.0.1
--- Vytvořeno: Pát 21. čec 2017, 09:51
+-- Vytvořeno: Pát 21. čec 2017, 19:51
 -- Verze serveru: 10.1.19-MariaDB
 -- Verze PHP: 5.6.28
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
+SET AUTOCOMMIT = 0;
+START TRANSACTION;
 SET time_zone = "+00:00";
 
 
@@ -26,11 +28,17 @@ SET time_zone = "+00:00";
 -- Struktura tabulky `mul_akeeba_common`
 --
 
-CREATE TABLE `mul_akeeba_common` (
+CREATE TABLE IF NOT EXISTS `mul_akeeba_common` (
   `key` varchar(192) CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL,
-  `value` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL
+  `value` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  PRIMARY KEY (`key`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
+--
+-- Vyprázdnit tabulku před vkládáním `mul_akeeba_common`
+--
+
+TRUNCATE TABLE `mul_akeeba_common`;
 --
 -- Vypisuji data pro tabulku `mul_akeeba_common`
 --
@@ -47,14 +55,20 @@ INSERT INTO `mul_akeeba_common` (`key`, `value`) VALUES
 -- Struktura tabulky `mul_ak_profiles`
 --
 
-CREATE TABLE `mul_ak_profiles` (
-  `id` int(10) UNSIGNED NOT NULL,
+CREATE TABLE IF NOT EXISTS `mul_ak_profiles` (
+  `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT,
   `description` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
   `configuration` longtext COLLATE utf8mb4_unicode_ci,
   `filters` longtext COLLATE utf8mb4_unicode_ci,
-  `quickicon` tinyint(3) NOT NULL DEFAULT '1'
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+  `quickicon` tinyint(3) NOT NULL DEFAULT '1',
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+--
+-- Vyprázdnit tabulku před vkládáním `mul_ak_profiles`
+--
+
+TRUNCATE TABLE `mul_ak_profiles`;
 --
 -- Vypisuji data pro tabulku `mul_ak_profiles`
 --
@@ -68,8 +82,8 @@ INSERT INTO `mul_ak_profiles` (`id`, `description`, `configuration`, `filters`, 
 -- Struktura tabulky `mul_ak_stats`
 --
 
-CREATE TABLE `mul_ak_stats` (
-  `id` bigint(20) UNSIGNED NOT NULL,
+CREATE TABLE IF NOT EXISTS `mul_ak_stats` (
+  `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT,
   `description` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
   `comment` longtext COLLATE utf8mb4_unicode_ci,
   `backupstart` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
@@ -85,9 +99,17 @@ CREATE TABLE `mul_ak_stats` (
   `backupid` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `filesexist` tinyint(3) NOT NULL DEFAULT '1',
   `remote_filename` varchar(1000) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `total_size` bigint(20) NOT NULL DEFAULT '0'
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+  `total_size` bigint(20) NOT NULL DEFAULT '0',
+  PRIMARY KEY (`id`),
+  KEY `idx_fullstatus` (`filesexist`,`status`),
+  KEY `idx_stale` (`status`,`origin`)
+) ENGINE=InnoDB AUTO_INCREMENT=20 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+--
+-- Vyprázdnit tabulku před vkládáním `mul_ak_stats`
+--
+
+TRUNCATE TABLE `mul_ak_stats`;
 --
 -- Vypisuji data pro tabulku `mul_ak_stats`
 --
@@ -106,29 +128,44 @@ INSERT INTO `mul_ak_stats` (`id`, `description`, `comment`, `backupstart`, `back
 -- Struktura tabulky `mul_ak_storage`
 --
 
-CREATE TABLE `mul_ak_storage` (
+CREATE TABLE IF NOT EXISTS `mul_ak_storage` (
   `tag` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
   `lastupdate` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  `data` longtext COLLATE utf8mb4_unicode_ci
+  `data` longtext COLLATE utf8mb4_unicode_ci,
+  PRIMARY KEY (`tag`(100))
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+--
+-- Vyprázdnit tabulku před vkládáním `mul_ak_storage`
+--
+
+TRUNCATE TABLE `mul_ak_storage`;
 -- --------------------------------------------------------
 
 --
 -- Struktura tabulky `mul_assets`
 --
 
-CREATE TABLE `mul_assets` (
-  `id` int(10) UNSIGNED NOT NULL COMMENT 'Primary Key',
+CREATE TABLE IF NOT EXISTS `mul_assets` (
+  `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'Primary Key',
   `parent_id` int(11) NOT NULL DEFAULT '0' COMMENT 'Nested set parent.',
   `lft` int(11) NOT NULL DEFAULT '0' COMMENT 'Nested set lft.',
   `rgt` int(11) NOT NULL DEFAULT '0' COMMENT 'Nested set rgt.',
   `level` int(10) UNSIGNED NOT NULL COMMENT 'The cached level in the nested tree.',
   `name` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT 'The unique name for the asset.\n',
   `title` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT 'The descriptive title for the asset.',
-  `rules` varchar(5120) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT 'JSON encoded access control.'
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+  `rules` varchar(5120) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT 'JSON encoded access control.',
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `idx_asset_name` (`name`),
+  KEY `idx_lft_rgt` (`lft`,`rgt`),
+  KEY `idx_parent_id` (`parent_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=310 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+--
+-- Vyprázdnit tabulku před vkládáním `mul_assets`
+--
+
+TRUNCATE TABLE `mul_assets`;
 --
 -- Vypisuji data pro tabulku `mul_assets`
 --
@@ -357,20 +394,27 @@ INSERT INTO `mul_assets` (`id`, `parent_id`, `lft`, `rgt`, `level`, `name`, `tit
 -- Struktura tabulky `mul_associations`
 --
 
-CREATE TABLE `mul_associations` (
+CREATE TABLE IF NOT EXISTS `mul_associations` (
   `id` int(11) NOT NULL COMMENT 'A reference to the associated item.',
   `context` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT 'The context of the associated item.',
-  `key` char(32) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT 'The key for the association computed from an md5 on associated ids.'
+  `key` char(32) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT 'The key for the association computed from an md5 on associated ids.',
+  PRIMARY KEY (`context`,`id`),
+  KEY `idx_key` (`key`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+--
+-- Vyprázdnit tabulku před vkládáním `mul_associations`
+--
+
+TRUNCATE TABLE `mul_associations`;
 -- --------------------------------------------------------
 
 --
 -- Struktura tabulky `mul_banners`
 --
 
-CREATE TABLE `mul_banners` (
-  `id` int(11) NOT NULL,
+CREATE TABLE IF NOT EXISTS `mul_banners` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
   `cid` int(11) NOT NULL DEFAULT '0',
   `type` int(11) NOT NULL DEFAULT '0',
   `name` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
@@ -403,9 +447,20 @@ CREATE TABLE `mul_banners` (
   `created_by_alias` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
   `modified` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
   `modified_by` int(10) UNSIGNED NOT NULL DEFAULT '0',
-  `version` int(10) UNSIGNED NOT NULL DEFAULT '1'
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+  `version` int(10) UNSIGNED NOT NULL DEFAULT '1',
+  PRIMARY KEY (`id`),
+  KEY `idx_state` (`state`),
+  KEY `idx_own_prefix` (`own_prefix`),
+  KEY `idx_banner_catid` (`catid`),
+  KEY `idx_language` (`language`),
+  KEY `idx_metakey_prefix` (`metakey_prefix`(100))
+) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+--
+-- Vyprázdnit tabulku před vkládáním `mul_banners`
+--
+
+TRUNCATE TABLE `mul_banners`;
 --
 -- Vypisuji data pro tabulku `mul_banners`
 --
@@ -421,8 +476,8 @@ INSERT INTO `mul_banners` (`id`, `cid`, `type`, `name`, `alias`, `imptotal`, `im
 -- Struktura tabulky `mul_banner_clients`
 --
 
-CREATE TABLE `mul_banner_clients` (
-  `id` int(11) NOT NULL,
+CREATE TABLE IF NOT EXISTS `mul_banner_clients` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
   `name` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
   `contact` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
   `email` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
@@ -435,9 +490,17 @@ CREATE TABLE `mul_banner_clients` (
   `metakey_prefix` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
   `purchase_type` tinyint(4) NOT NULL DEFAULT '-1',
   `track_clicks` tinyint(4) NOT NULL DEFAULT '-1',
-  `track_impressions` tinyint(4) NOT NULL DEFAULT '-1'
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+  `track_impressions` tinyint(4) NOT NULL DEFAULT '-1',
+  PRIMARY KEY (`id`),
+  KEY `idx_own_prefix` (`own_prefix`),
+  KEY `idx_metakey_prefix` (`metakey_prefix`(100))
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+--
+-- Vyprázdnit tabulku před vkládáním `mul_banner_clients`
+--
+
+TRUNCATE TABLE `mul_banner_clients`;
 --
 -- Vypisuji data pro tabulku `mul_banner_clients`
 --
@@ -453,21 +516,30 @@ INSERT INTO `mul_banner_clients` (`id`, `name`, `contact`, `email`, `extrainfo`,
 -- Struktura tabulky `mul_banner_tracks`
 --
 
-CREATE TABLE `mul_banner_tracks` (
+CREATE TABLE IF NOT EXISTS `mul_banner_tracks` (
   `track_date` datetime NOT NULL,
   `track_type` int(10) UNSIGNED NOT NULL,
   `banner_id` int(10) UNSIGNED NOT NULL,
-  `count` int(10) UNSIGNED NOT NULL DEFAULT '0'
+  `count` int(10) UNSIGNED NOT NULL DEFAULT '0',
+  PRIMARY KEY (`track_date`,`track_type`,`banner_id`),
+  KEY `idx_track_date` (`track_date`),
+  KEY `idx_track_type` (`track_type`),
+  KEY `idx_banner_id` (`banner_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+--
+-- Vyprázdnit tabulku před vkládáním `mul_banner_tracks`
+--
+
+TRUNCATE TABLE `mul_banner_tracks`;
 -- --------------------------------------------------------
 
 --
 -- Struktura tabulky `mul_categories`
 --
 
-CREATE TABLE `mul_categories` (
-  `id` int(11) NOT NULL,
+CREATE TABLE IF NOT EXISTS `mul_categories` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
   `asset_id` int(10) UNSIGNED NOT NULL DEFAULT '0' COMMENT 'FK to the #__assets table.',
   `parent_id` int(10) UNSIGNED NOT NULL DEFAULT '0',
   `lft` int(11) NOT NULL DEFAULT '0',
@@ -493,9 +565,22 @@ CREATE TABLE `mul_categories` (
   `modified_time` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
   `hits` int(10) UNSIGNED NOT NULL DEFAULT '0',
   `language` char(7) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
-  `version` int(10) UNSIGNED NOT NULL DEFAULT '1'
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+  `version` int(10) UNSIGNED NOT NULL DEFAULT '1',
+  PRIMARY KEY (`id`),
+  KEY `cat_idx` (`extension`,`published`,`access`),
+  KEY `idx_access` (`access`),
+  KEY `idx_checkout` (`checked_out`),
+  KEY `idx_left_right` (`lft`,`rgt`),
+  KEY `idx_language` (`language`),
+  KEY `idx_path` (`path`(100)),
+  KEY `idx_alias` (`alias`(100))
+) ENGINE=InnoDB AUTO_INCREMENT=85 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+--
+-- Vyprázdnit tabulku před vkládáním `mul_categories`
+--
+
+TRUNCATE TABLE `mul_categories`;
 --
 -- Vypisuji data pro tabulku `mul_categories`
 --
@@ -555,8 +640,8 @@ INSERT INTO `mul_categories` (`id`, `asset_id`, `parent_id`, `lft`, `rgt`, `leve
 -- Struktura tabulky `mul_contact_details`
 --
 
-CREATE TABLE `mul_contact_details` (
-  `id` int(11) NOT NULL,
+CREATE TABLE IF NOT EXISTS `mul_contact_details` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
   `name` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
   `alias` varchar(400) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL,
   `con_position` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
@@ -598,9 +683,23 @@ CREATE TABLE `mul_contact_details` (
   `publish_up` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
   `publish_down` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
   `version` int(10) UNSIGNED NOT NULL DEFAULT '1',
-  `hits` int(10) UNSIGNED NOT NULL DEFAULT '0'
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+  `hits` int(10) UNSIGNED NOT NULL DEFAULT '0',
+  PRIMARY KEY (`id`),
+  KEY `idx_access` (`access`),
+  KEY `idx_checkout` (`checked_out`),
+  KEY `idx_state` (`published`),
+  KEY `idx_catid` (`catid`),
+  KEY `idx_createdby` (`created_by`),
+  KEY `idx_featured_catid` (`featured`,`catid`),
+  KEY `idx_language` (`language`),
+  KEY `idx_xreference` (`xreference`)
+) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+--
+-- Vyprázdnit tabulku před vkládáním `mul_contact_details`
+--
+
+TRUNCATE TABLE `mul_contact_details`;
 --
 -- Vypisuji data pro tabulku `mul_contact_details`
 --
@@ -621,8 +720,8 @@ INSERT INTO `mul_contact_details` (`id`, `name`, `alias`, `con_position`, `addre
 -- Struktura tabulky `mul_content`
 --
 
-CREATE TABLE `mul_content` (
-  `id` int(10) UNSIGNED NOT NULL,
+CREATE TABLE IF NOT EXISTS `mul_content` (
+  `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT,
   `asset_id` int(10) UNSIGNED NOT NULL DEFAULT '0' COMMENT 'FK to the #__assets table.',
   `title` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
   `alias` varchar(400) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL DEFAULT '',
@@ -651,9 +750,23 @@ CREATE TABLE `mul_content` (
   `metadata` mediumtext COLLATE utf8mb4_unicode_ci NOT NULL,
   `featured` tinyint(3) UNSIGNED NOT NULL DEFAULT '0' COMMENT 'Set if article is featured.',
   `language` char(7) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT 'The language code for the article.',
-  `xreference` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT ''
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+  `xreference` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
+  PRIMARY KEY (`id`),
+  KEY `idx_access` (`access`),
+  KEY `idx_checkout` (`checked_out`),
+  KEY `idx_state` (`state`),
+  KEY `idx_catid` (`catid`),
+  KEY `idx_createdby` (`created_by`),
+  KEY `idx_featured_catid` (`featured`,`catid`),
+  KEY `idx_language` (`language`),
+  KEY `idx_xreference` (`xreference`)
+) ENGINE=InnoDB AUTO_INCREMENT=106 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+--
+-- Vyprázdnit tabulku před vkládáním `mul_content`
+--
+
+TRUNCATE TABLE `mul_content`;
 --
 -- Vypisuji data pro tabulku `mul_content`
 --
@@ -724,39 +837,60 @@ INSERT INTO `mul_content` (`id`, `asset_id`, `title`, `alias`, `introtext`, `ful
 -- Struktura tabulky `mul_contentitem_tag_map`
 --
 
-CREATE TABLE `mul_contentitem_tag_map` (
+CREATE TABLE IF NOT EXISTS `mul_contentitem_tag_map` (
   `type_alias` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
   `core_content_id` int(10) UNSIGNED NOT NULL COMMENT 'PK from the core content table',
   `content_item_id` int(11) NOT NULL COMMENT 'PK from the content type table',
   `tag_id` int(10) UNSIGNED NOT NULL COMMENT 'PK from the tag table',
   `tag_date` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'Date of most recent save for this tag-item',
-  `type_id` mediumint(8) NOT NULL COMMENT 'PK from the content_type table'
+  `type_id` mediumint(8) NOT NULL COMMENT 'PK from the content_type table',
+  UNIQUE KEY `uc_ItemnameTagid` (`type_id`,`content_item_id`,`tag_id`),
+  KEY `idx_tag_type` (`tag_id`,`type_id`),
+  KEY `idx_date_id` (`tag_date`,`tag_id`),
+  KEY `idx_core_content_id` (`core_content_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Maps items from content tables to tags';
 
+--
+-- Vyprázdnit tabulku před vkládáním `mul_contentitem_tag_map`
+--
+
+TRUNCATE TABLE `mul_contentitem_tag_map`;
 -- --------------------------------------------------------
 
 --
 -- Struktura tabulky `mul_content_frontpage`
 --
 
-CREATE TABLE `mul_content_frontpage` (
+CREATE TABLE IF NOT EXISTS `mul_content_frontpage` (
   `content_id` int(11) NOT NULL DEFAULT '0',
-  `ordering` int(11) NOT NULL DEFAULT '0'
+  `ordering` int(11) NOT NULL DEFAULT '0',
+  PRIMARY KEY (`content_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+--
+-- Vyprázdnit tabulku před vkládáním `mul_content_frontpage`
+--
+
+TRUNCATE TABLE `mul_content_frontpage`;
 -- --------------------------------------------------------
 
 --
 -- Struktura tabulky `mul_content_rating`
 --
 
-CREATE TABLE `mul_content_rating` (
+CREATE TABLE IF NOT EXISTS `mul_content_rating` (
   `content_id` int(11) NOT NULL DEFAULT '0',
   `rating_sum` int(10) UNSIGNED NOT NULL DEFAULT '0',
   `rating_count` int(10) UNSIGNED NOT NULL DEFAULT '0',
-  `lastip` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT ''
+  `lastip` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
+  PRIMARY KEY (`content_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+--
+-- Vyprázdnit tabulku před vkládáním `mul_content_rating`
+--
+
+TRUNCATE TABLE `mul_content_rating`;
 --
 -- Vypisuji data pro tabulku `mul_content_rating`
 --
@@ -774,17 +908,24 @@ INSERT INTO `mul_content_rating` (`content_id`, `rating_sum`, `rating_count`, `l
 -- Struktura tabulky `mul_content_types`
 --
 
-CREATE TABLE `mul_content_types` (
-  `type_id` int(10) UNSIGNED NOT NULL,
+CREATE TABLE IF NOT EXISTS `mul_content_types` (
+  `type_id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT,
   `type_title` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
   `type_alias` varchar(400) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
   `table` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
   `rules` mediumtext COLLATE utf8mb4_unicode_ci NOT NULL,
   `field_mappings` mediumtext COLLATE utf8mb4_unicode_ci NOT NULL,
   `router` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
-  `content_history_options` varchar(5120) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'JSON string for com_contenthistory options'
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+  `content_history_options` varchar(5120) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'JSON string for com_contenthistory options',
+  PRIMARY KEY (`type_id`),
+  KEY `idx_alias` (`type_alias`(100))
+) ENGINE=InnoDB AUTO_INCREMENT=16 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+--
+-- Vyprázdnit tabulku před vkládáním `mul_content_types`
+--
+
+TRUNCATE TABLE `mul_content_types`;
 --
 -- Vypisuji data pro tabulku `mul_content_types`
 --
@@ -812,19 +953,24 @@ INSERT INTO `mul_content_types` (`type_id`, `type_title`, `type_alias`, `table`,
 -- Struktura tabulky `mul_core_log_searches`
 --
 
-CREATE TABLE `mul_core_log_searches` (
+CREATE TABLE IF NOT EXISTS `mul_core_log_searches` (
   `search_term` varchar(128) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
   `hits` int(10) UNSIGNED NOT NULL DEFAULT '0'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+--
+-- Vyprázdnit tabulku před vkládáním `mul_core_log_searches`
+--
+
+TRUNCATE TABLE `mul_core_log_searches`;
 -- --------------------------------------------------------
 
 --
 -- Struktura tabulky `mul_extensions`
 --
 
-CREATE TABLE `mul_extensions` (
-  `extension_id` int(11) NOT NULL,
+CREATE TABLE IF NOT EXISTS `mul_extensions` (
+  `extension_id` int(11) NOT NULL AUTO_INCREMENT,
   `package_id` int(11) NOT NULL DEFAULT '0' COMMENT 'Parent package ID for extensions installed as a package.',
   `name` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
   `type` varchar(20) COLLATE utf8mb4_unicode_ci NOT NULL,
@@ -841,9 +987,18 @@ CREATE TABLE `mul_extensions` (
   `checked_out` int(10) UNSIGNED NOT NULL DEFAULT '0',
   `checked_out_time` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
   `ordering` int(11) DEFAULT '0',
-  `state` int(11) DEFAULT '0'
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+  `state` int(11) DEFAULT '0',
+  PRIMARY KEY (`extension_id`),
+  KEY `element_clientid` (`element`,`client_id`),
+  KEY `element_folder_clientid` (`element`,`folder`,`client_id`),
+  KEY `extension` (`type`,`element`,`folder`,`client_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=10107 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+--
+-- Vyprázdnit tabulku před vkládáním `mul_extensions`
+--
+
+TRUNCATE TABLE `mul_extensions`;
 --
 -- Vypisuji data pro tabulku `mul_extensions`
 --
@@ -1082,8 +1237,8 @@ INSERT INTO `mul_extensions` (`extension_id`, `package_id`, `name`, `type`, `ele
 -- Struktura tabulky `mul_fields`
 --
 
-CREATE TABLE `mul_fields` (
-  `id` int(10) UNSIGNED NOT NULL,
+CREATE TABLE IF NOT EXISTS `mul_fields` (
+  `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT,
   `asset_id` int(10) UNSIGNED NOT NULL DEFAULT '0',
   `context` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
   `group_id` int(10) UNSIGNED NOT NULL DEFAULT '0',
@@ -1106,28 +1261,46 @@ CREATE TABLE `mul_fields` (
   `created_user_id` int(10) UNSIGNED NOT NULL DEFAULT '0',
   `modified_time` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
   `modified_by` int(10) UNSIGNED NOT NULL DEFAULT '0',
-  `access` int(11) NOT NULL DEFAULT '1'
+  `access` int(11) NOT NULL DEFAULT '1',
+  PRIMARY KEY (`id`),
+  KEY `idx_checkout` (`checked_out`),
+  KEY `idx_state` (`state`),
+  KEY `idx_created_user_id` (`created_user_id`),
+  KEY `idx_access` (`access`),
+  KEY `idx_context` (`context`(191)),
+  KEY `idx_language` (`language`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+--
+-- Vyprázdnit tabulku před vkládáním `mul_fields`
+--
+
+TRUNCATE TABLE `mul_fields`;
 -- --------------------------------------------------------
 
 --
 -- Struktura tabulky `mul_fields_categories`
 --
 
-CREATE TABLE `mul_fields_categories` (
+CREATE TABLE IF NOT EXISTS `mul_fields_categories` (
   `field_id` int(11) NOT NULL DEFAULT '0',
-  `category_id` int(11) NOT NULL DEFAULT '0'
+  `category_id` int(11) NOT NULL DEFAULT '0',
+  PRIMARY KEY (`field_id`,`category_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+--
+-- Vyprázdnit tabulku před vkládáním `mul_fields_categories`
+--
+
+TRUNCATE TABLE `mul_fields_categories`;
 -- --------------------------------------------------------
 
 --
 -- Struktura tabulky `mul_fields_groups`
 --
 
-CREATE TABLE `mul_fields_groups` (
-  `id` int(10) UNSIGNED NOT NULL,
+CREATE TABLE IF NOT EXISTS `mul_fields_groups` (
+  `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT,
   `asset_id` int(10) UNSIGNED NOT NULL DEFAULT '0',
   `context` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
   `title` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
@@ -1142,29 +1315,48 @@ CREATE TABLE `mul_fields_groups` (
   `created_by` int(10) UNSIGNED NOT NULL DEFAULT '0',
   `modified` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
   `modified_by` int(10) UNSIGNED NOT NULL DEFAULT '0',
-  `access` int(11) NOT NULL DEFAULT '1'
+  `access` int(11) NOT NULL DEFAULT '1',
+  PRIMARY KEY (`id`),
+  KEY `idx_checkout` (`checked_out`),
+  KEY `idx_state` (`state`),
+  KEY `idx_created_by` (`created_by`),
+  KEY `idx_access` (`access`),
+  KEY `idx_context` (`context`(191)),
+  KEY `idx_language` (`language`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+--
+-- Vyprázdnit tabulku před vkládáním `mul_fields_groups`
+--
+
+TRUNCATE TABLE `mul_fields_groups`;
 -- --------------------------------------------------------
 
 --
 -- Struktura tabulky `mul_fields_values`
 --
 
-CREATE TABLE `mul_fields_values` (
+CREATE TABLE IF NOT EXISTS `mul_fields_values` (
   `field_id` int(10) UNSIGNED NOT NULL,
   `item_id` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT 'Allow references to items which have strings as ids, eg. none db systems.',
-  `value` text COLLATE utf8mb4_unicode_ci NOT NULL
+  `value` text COLLATE utf8mb4_unicode_ci NOT NULL,
+  KEY `idx_field_id` (`field_id`),
+  KEY `idx_item_id` (`item_id`(191))
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+--
+-- Vyprázdnit tabulku před vkládáním `mul_fields_values`
+--
+
+TRUNCATE TABLE `mul_fields_values`;
 -- --------------------------------------------------------
 
 --
 -- Struktura tabulky `mul_finder_filters`
 --
 
-CREATE TABLE `mul_finder_filters` (
-  `filter_id` int(10) UNSIGNED NOT NULL,
+CREATE TABLE IF NOT EXISTS `mul_finder_filters` (
+  `filter_id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT,
   `title` varchar(255) NOT NULL,
   `alias` varchar(255) NOT NULL,
   `state` tinyint(1) NOT NULL DEFAULT '1',
@@ -1177,17 +1369,23 @@ CREATE TABLE `mul_finder_filters` (
   `checked_out_time` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
   `map_count` int(10) UNSIGNED NOT NULL DEFAULT '0',
   `data` mediumtext NOT NULL,
-  `params` longtext
+  `params` longtext,
+  PRIMARY KEY (`filter_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
+--
+-- Vyprázdnit tabulku před vkládáním `mul_finder_filters`
+--
+
+TRUNCATE TABLE `mul_finder_filters`;
 -- --------------------------------------------------------
 
 --
 -- Struktura tabulky `mul_finder_links`
 --
 
-CREATE TABLE `mul_finder_links` (
-  `link_id` int(10) UNSIGNED NOT NULL,
+CREATE TABLE IF NOT EXISTS `mul_finder_links` (
+  `link_id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT,
   `url` varchar(255) NOT NULL,
   `route` varchar(255) NOT NULL,
   `title` varchar(400) DEFAULT NULL,
@@ -1205,235 +1403,394 @@ CREATE TABLE `mul_finder_links` (
   `list_price` double UNSIGNED NOT NULL DEFAULT '0',
   `sale_price` double UNSIGNED NOT NULL DEFAULT '0',
   `type_id` int(11) NOT NULL,
-  `object` mediumblob NOT NULL
+  `object` mediumblob NOT NULL,
+  PRIMARY KEY (`link_id`),
+  KEY `idx_type` (`type_id`),
+  KEY `idx_md5` (`md5sum`),
+  KEY `idx_url` (`url`(75)),
+  KEY `idx_published_list` (`published`,`state`,`access`,`publish_start_date`,`publish_end_date`,`list_price`),
+  KEY `idx_published_sale` (`published`,`state`,`access`,`publish_start_date`,`publish_end_date`,`sale_price`),
+  KEY `idx_title` (`title`(100))
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
+--
+-- Vyprázdnit tabulku před vkládáním `mul_finder_links`
+--
+
+TRUNCATE TABLE `mul_finder_links`;
 -- --------------------------------------------------------
 
 --
 -- Struktura tabulky `mul_finder_links_terms0`
 --
 
-CREATE TABLE `mul_finder_links_terms0` (
+CREATE TABLE IF NOT EXISTS `mul_finder_links_terms0` (
   `link_id` int(10) UNSIGNED NOT NULL,
   `term_id` int(10) UNSIGNED NOT NULL,
-  `weight` float UNSIGNED NOT NULL
+  `weight` float UNSIGNED NOT NULL,
+  PRIMARY KEY (`link_id`,`term_id`),
+  KEY `idx_term_weight` (`term_id`,`weight`),
+  KEY `idx_link_term_weight` (`link_id`,`term_id`,`weight`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
+--
+-- Vyprázdnit tabulku před vkládáním `mul_finder_links_terms0`
+--
+
+TRUNCATE TABLE `mul_finder_links_terms0`;
 -- --------------------------------------------------------
 
 --
 -- Struktura tabulky `mul_finder_links_terms1`
 --
 
-CREATE TABLE `mul_finder_links_terms1` (
+CREATE TABLE IF NOT EXISTS `mul_finder_links_terms1` (
   `link_id` int(10) UNSIGNED NOT NULL,
   `term_id` int(10) UNSIGNED NOT NULL,
-  `weight` float UNSIGNED NOT NULL
+  `weight` float UNSIGNED NOT NULL,
+  PRIMARY KEY (`link_id`,`term_id`),
+  KEY `idx_term_weight` (`term_id`,`weight`),
+  KEY `idx_link_term_weight` (`link_id`,`term_id`,`weight`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
+--
+-- Vyprázdnit tabulku před vkládáním `mul_finder_links_terms1`
+--
+
+TRUNCATE TABLE `mul_finder_links_terms1`;
 -- --------------------------------------------------------
 
 --
 -- Struktura tabulky `mul_finder_links_terms2`
 --
 
-CREATE TABLE `mul_finder_links_terms2` (
+CREATE TABLE IF NOT EXISTS `mul_finder_links_terms2` (
   `link_id` int(10) UNSIGNED NOT NULL,
   `term_id` int(10) UNSIGNED NOT NULL,
-  `weight` float UNSIGNED NOT NULL
+  `weight` float UNSIGNED NOT NULL,
+  PRIMARY KEY (`link_id`,`term_id`),
+  KEY `idx_term_weight` (`term_id`,`weight`),
+  KEY `idx_link_term_weight` (`link_id`,`term_id`,`weight`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
+--
+-- Vyprázdnit tabulku před vkládáním `mul_finder_links_terms2`
+--
+
+TRUNCATE TABLE `mul_finder_links_terms2`;
 -- --------------------------------------------------------
 
 --
 -- Struktura tabulky `mul_finder_links_terms3`
 --
 
-CREATE TABLE `mul_finder_links_terms3` (
+CREATE TABLE IF NOT EXISTS `mul_finder_links_terms3` (
   `link_id` int(10) UNSIGNED NOT NULL,
   `term_id` int(10) UNSIGNED NOT NULL,
-  `weight` float UNSIGNED NOT NULL
+  `weight` float UNSIGNED NOT NULL,
+  PRIMARY KEY (`link_id`,`term_id`),
+  KEY `idx_term_weight` (`term_id`,`weight`),
+  KEY `idx_link_term_weight` (`link_id`,`term_id`,`weight`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
+--
+-- Vyprázdnit tabulku před vkládáním `mul_finder_links_terms3`
+--
+
+TRUNCATE TABLE `mul_finder_links_terms3`;
 -- --------------------------------------------------------
 
 --
 -- Struktura tabulky `mul_finder_links_terms4`
 --
 
-CREATE TABLE `mul_finder_links_terms4` (
+CREATE TABLE IF NOT EXISTS `mul_finder_links_terms4` (
   `link_id` int(10) UNSIGNED NOT NULL,
   `term_id` int(10) UNSIGNED NOT NULL,
-  `weight` float UNSIGNED NOT NULL
+  `weight` float UNSIGNED NOT NULL,
+  PRIMARY KEY (`link_id`,`term_id`),
+  KEY `idx_term_weight` (`term_id`,`weight`),
+  KEY `idx_link_term_weight` (`link_id`,`term_id`,`weight`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
+--
+-- Vyprázdnit tabulku před vkládáním `mul_finder_links_terms4`
+--
+
+TRUNCATE TABLE `mul_finder_links_terms4`;
 -- --------------------------------------------------------
 
 --
 -- Struktura tabulky `mul_finder_links_terms5`
 --
 
-CREATE TABLE `mul_finder_links_terms5` (
+CREATE TABLE IF NOT EXISTS `mul_finder_links_terms5` (
   `link_id` int(10) UNSIGNED NOT NULL,
   `term_id` int(10) UNSIGNED NOT NULL,
-  `weight` float UNSIGNED NOT NULL
+  `weight` float UNSIGNED NOT NULL,
+  PRIMARY KEY (`link_id`,`term_id`),
+  KEY `idx_term_weight` (`term_id`,`weight`),
+  KEY `idx_link_term_weight` (`link_id`,`term_id`,`weight`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
+--
+-- Vyprázdnit tabulku před vkládáním `mul_finder_links_terms5`
+--
+
+TRUNCATE TABLE `mul_finder_links_terms5`;
 -- --------------------------------------------------------
 
 --
 -- Struktura tabulky `mul_finder_links_terms6`
 --
 
-CREATE TABLE `mul_finder_links_terms6` (
+CREATE TABLE IF NOT EXISTS `mul_finder_links_terms6` (
   `link_id` int(10) UNSIGNED NOT NULL,
   `term_id` int(10) UNSIGNED NOT NULL,
-  `weight` float UNSIGNED NOT NULL
+  `weight` float UNSIGNED NOT NULL,
+  PRIMARY KEY (`link_id`,`term_id`),
+  KEY `idx_term_weight` (`term_id`,`weight`),
+  KEY `idx_link_term_weight` (`link_id`,`term_id`,`weight`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
+--
+-- Vyprázdnit tabulku před vkládáním `mul_finder_links_terms6`
+--
+
+TRUNCATE TABLE `mul_finder_links_terms6`;
 -- --------------------------------------------------------
 
 --
 -- Struktura tabulky `mul_finder_links_terms7`
 --
 
-CREATE TABLE `mul_finder_links_terms7` (
+CREATE TABLE IF NOT EXISTS `mul_finder_links_terms7` (
   `link_id` int(10) UNSIGNED NOT NULL,
   `term_id` int(10) UNSIGNED NOT NULL,
-  `weight` float UNSIGNED NOT NULL
+  `weight` float UNSIGNED NOT NULL,
+  PRIMARY KEY (`link_id`,`term_id`),
+  KEY `idx_term_weight` (`term_id`,`weight`),
+  KEY `idx_link_term_weight` (`link_id`,`term_id`,`weight`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
+--
+-- Vyprázdnit tabulku před vkládáním `mul_finder_links_terms7`
+--
+
+TRUNCATE TABLE `mul_finder_links_terms7`;
 -- --------------------------------------------------------
 
 --
 -- Struktura tabulky `mul_finder_links_terms8`
 --
 
-CREATE TABLE `mul_finder_links_terms8` (
+CREATE TABLE IF NOT EXISTS `mul_finder_links_terms8` (
   `link_id` int(10) UNSIGNED NOT NULL,
   `term_id` int(10) UNSIGNED NOT NULL,
-  `weight` float UNSIGNED NOT NULL
+  `weight` float UNSIGNED NOT NULL,
+  PRIMARY KEY (`link_id`,`term_id`),
+  KEY `idx_term_weight` (`term_id`,`weight`),
+  KEY `idx_link_term_weight` (`link_id`,`term_id`,`weight`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
+--
+-- Vyprázdnit tabulku před vkládáním `mul_finder_links_terms8`
+--
+
+TRUNCATE TABLE `mul_finder_links_terms8`;
 -- --------------------------------------------------------
 
 --
 -- Struktura tabulky `mul_finder_links_terms9`
 --
 
-CREATE TABLE `mul_finder_links_terms9` (
+CREATE TABLE IF NOT EXISTS `mul_finder_links_terms9` (
   `link_id` int(10) UNSIGNED NOT NULL,
   `term_id` int(10) UNSIGNED NOT NULL,
-  `weight` float UNSIGNED NOT NULL
+  `weight` float UNSIGNED NOT NULL,
+  PRIMARY KEY (`link_id`,`term_id`),
+  KEY `idx_term_weight` (`term_id`,`weight`),
+  KEY `idx_link_term_weight` (`link_id`,`term_id`,`weight`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
+--
+-- Vyprázdnit tabulku před vkládáním `mul_finder_links_terms9`
+--
+
+TRUNCATE TABLE `mul_finder_links_terms9`;
 -- --------------------------------------------------------
 
 --
 -- Struktura tabulky `mul_finder_links_termsa`
 --
 
-CREATE TABLE `mul_finder_links_termsa` (
+CREATE TABLE IF NOT EXISTS `mul_finder_links_termsa` (
   `link_id` int(10) UNSIGNED NOT NULL,
   `term_id` int(10) UNSIGNED NOT NULL,
-  `weight` float UNSIGNED NOT NULL
+  `weight` float UNSIGNED NOT NULL,
+  PRIMARY KEY (`link_id`,`term_id`),
+  KEY `idx_term_weight` (`term_id`,`weight`),
+  KEY `idx_link_term_weight` (`link_id`,`term_id`,`weight`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
+--
+-- Vyprázdnit tabulku před vkládáním `mul_finder_links_termsa`
+--
+
+TRUNCATE TABLE `mul_finder_links_termsa`;
 -- --------------------------------------------------------
 
 --
 -- Struktura tabulky `mul_finder_links_termsb`
 --
 
-CREATE TABLE `mul_finder_links_termsb` (
+CREATE TABLE IF NOT EXISTS `mul_finder_links_termsb` (
   `link_id` int(10) UNSIGNED NOT NULL,
   `term_id` int(10) UNSIGNED NOT NULL,
-  `weight` float UNSIGNED NOT NULL
+  `weight` float UNSIGNED NOT NULL,
+  PRIMARY KEY (`link_id`,`term_id`),
+  KEY `idx_term_weight` (`term_id`,`weight`),
+  KEY `idx_link_term_weight` (`link_id`,`term_id`,`weight`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
+--
+-- Vyprázdnit tabulku před vkládáním `mul_finder_links_termsb`
+--
+
+TRUNCATE TABLE `mul_finder_links_termsb`;
 -- --------------------------------------------------------
 
 --
 -- Struktura tabulky `mul_finder_links_termsc`
 --
 
-CREATE TABLE `mul_finder_links_termsc` (
+CREATE TABLE IF NOT EXISTS `mul_finder_links_termsc` (
   `link_id` int(10) UNSIGNED NOT NULL,
   `term_id` int(10) UNSIGNED NOT NULL,
-  `weight` float UNSIGNED NOT NULL
+  `weight` float UNSIGNED NOT NULL,
+  PRIMARY KEY (`link_id`,`term_id`),
+  KEY `idx_term_weight` (`term_id`,`weight`),
+  KEY `idx_link_term_weight` (`link_id`,`term_id`,`weight`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
+--
+-- Vyprázdnit tabulku před vkládáním `mul_finder_links_termsc`
+--
+
+TRUNCATE TABLE `mul_finder_links_termsc`;
 -- --------------------------------------------------------
 
 --
 -- Struktura tabulky `mul_finder_links_termsd`
 --
 
-CREATE TABLE `mul_finder_links_termsd` (
+CREATE TABLE IF NOT EXISTS `mul_finder_links_termsd` (
   `link_id` int(10) UNSIGNED NOT NULL,
   `term_id` int(10) UNSIGNED NOT NULL,
-  `weight` float UNSIGNED NOT NULL
+  `weight` float UNSIGNED NOT NULL,
+  PRIMARY KEY (`link_id`,`term_id`),
+  KEY `idx_term_weight` (`term_id`,`weight`),
+  KEY `idx_link_term_weight` (`link_id`,`term_id`,`weight`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
+--
+-- Vyprázdnit tabulku před vkládáním `mul_finder_links_termsd`
+--
+
+TRUNCATE TABLE `mul_finder_links_termsd`;
 -- --------------------------------------------------------
 
 --
 -- Struktura tabulky `mul_finder_links_termse`
 --
 
-CREATE TABLE `mul_finder_links_termse` (
+CREATE TABLE IF NOT EXISTS `mul_finder_links_termse` (
   `link_id` int(10) UNSIGNED NOT NULL,
   `term_id` int(10) UNSIGNED NOT NULL,
-  `weight` float UNSIGNED NOT NULL
+  `weight` float UNSIGNED NOT NULL,
+  PRIMARY KEY (`link_id`,`term_id`),
+  KEY `idx_term_weight` (`term_id`,`weight`),
+  KEY `idx_link_term_weight` (`link_id`,`term_id`,`weight`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
+--
+-- Vyprázdnit tabulku před vkládáním `mul_finder_links_termse`
+--
+
+TRUNCATE TABLE `mul_finder_links_termse`;
 -- --------------------------------------------------------
 
 --
 -- Struktura tabulky `mul_finder_links_termsf`
 --
 
-CREATE TABLE `mul_finder_links_termsf` (
+CREATE TABLE IF NOT EXISTS `mul_finder_links_termsf` (
   `link_id` int(10) UNSIGNED NOT NULL,
   `term_id` int(10) UNSIGNED NOT NULL,
-  `weight` float UNSIGNED NOT NULL
+  `weight` float UNSIGNED NOT NULL,
+  PRIMARY KEY (`link_id`,`term_id`),
+  KEY `idx_term_weight` (`term_id`,`weight`),
+  KEY `idx_link_term_weight` (`link_id`,`term_id`,`weight`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
+--
+-- Vyprázdnit tabulku před vkládáním `mul_finder_links_termsf`
+--
+
+TRUNCATE TABLE `mul_finder_links_termsf`;
 -- --------------------------------------------------------
 
 --
 -- Struktura tabulky `mul_finder_taxonomy`
 --
 
-CREATE TABLE `mul_finder_taxonomy` (
-  `id` int(10) UNSIGNED NOT NULL,
+CREATE TABLE IF NOT EXISTS `mul_finder_taxonomy` (
+  `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT,
   `parent_id` int(10) UNSIGNED NOT NULL DEFAULT '0',
   `title` varchar(255) NOT NULL,
   `state` tinyint(1) UNSIGNED NOT NULL DEFAULT '1',
   `access` tinyint(1) UNSIGNED NOT NULL DEFAULT '0',
-  `ordering` tinyint(1) UNSIGNED NOT NULL DEFAULT '0'
+  `ordering` tinyint(1) UNSIGNED NOT NULL DEFAULT '0',
+  PRIMARY KEY (`id`),
+  KEY `parent_id` (`parent_id`),
+  KEY `state` (`state`),
+  KEY `ordering` (`ordering`),
+  KEY `access` (`access`),
+  KEY `idx_parent_published` (`parent_id`,`state`,`access`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
+--
+-- Vyprázdnit tabulku před vkládáním `mul_finder_taxonomy`
+--
+
+TRUNCATE TABLE `mul_finder_taxonomy`;
 -- --------------------------------------------------------
 
 --
 -- Struktura tabulky `mul_finder_taxonomy_map`
 --
 
-CREATE TABLE `mul_finder_taxonomy_map` (
+CREATE TABLE IF NOT EXISTS `mul_finder_taxonomy_map` (
   `link_id` int(10) UNSIGNED NOT NULL,
-  `node_id` int(10) UNSIGNED NOT NULL
+  `node_id` int(10) UNSIGNED NOT NULL,
+  PRIMARY KEY (`link_id`,`node_id`),
+  KEY `link_id` (`link_id`),
+  KEY `node_id` (`node_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
+--
+-- Vyprázdnit tabulku před vkládáním `mul_finder_taxonomy_map`
+--
+
+TRUNCATE TABLE `mul_finder_taxonomy_map`;
 -- --------------------------------------------------------
 
 --
 -- Struktura tabulky `mul_finder_terms`
 --
 
-CREATE TABLE `mul_finder_terms` (
-  `term_id` int(10) UNSIGNED NOT NULL,
+CREATE TABLE IF NOT EXISTS `mul_finder_terms` (
+  `term_id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT,
   `term` varchar(75) NOT NULL,
   `stem` varchar(75) NOT NULL,
   `common` tinyint(1) UNSIGNED NOT NULL DEFAULT '0',
@@ -1441,20 +1798,37 @@ CREATE TABLE `mul_finder_terms` (
   `weight` float UNSIGNED NOT NULL DEFAULT '0',
   `soundex` varchar(75) NOT NULL,
   `links` int(10) NOT NULL DEFAULT '0',
-  `language` char(3) NOT NULL DEFAULT ''
+  `language` char(3) NOT NULL DEFAULT '',
+  PRIMARY KEY (`term_id`),
+  UNIQUE KEY `idx_term` (`term`),
+  KEY `idx_term_phrase` (`term`,`phrase`),
+  KEY `idx_stem_phrase` (`stem`,`phrase`),
+  KEY `idx_soundex_phrase` (`soundex`,`phrase`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
+--
+-- Vyprázdnit tabulku před vkládáním `mul_finder_terms`
+--
+
+TRUNCATE TABLE `mul_finder_terms`;
 -- --------------------------------------------------------
 
 --
 -- Struktura tabulky `mul_finder_terms_common`
 --
 
-CREATE TABLE `mul_finder_terms_common` (
+CREATE TABLE IF NOT EXISTS `mul_finder_terms_common` (
   `term` varchar(75) NOT NULL,
-  `language` varchar(3) NOT NULL
+  `language` varchar(3) NOT NULL,
+  KEY `idx_word_lang` (`term`,`language`),
+  KEY `idx_lang` (`language`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
+--
+-- Vyprázdnit tabulku před vkládáním `mul_finder_terms_common`
+--
+
+TRUNCATE TABLE `mul_finder_terms_common`;
 --
 -- Vypisuji data pro tabulku `mul_finder_terms_common`
 --
@@ -1582,23 +1956,30 @@ INSERT INTO `mul_finder_terms_common` (`term`, `language`) VALUES
 -- Struktura tabulky `mul_finder_tokens`
 --
 
-CREATE TABLE `mul_finder_tokens` (
+CREATE TABLE IF NOT EXISTS `mul_finder_tokens` (
   `term` varchar(75) NOT NULL,
   `stem` varchar(75) NOT NULL,
   `common` tinyint(1) UNSIGNED NOT NULL DEFAULT '0',
   `phrase` tinyint(1) UNSIGNED NOT NULL DEFAULT '0',
   `weight` float UNSIGNED NOT NULL DEFAULT '1',
   `context` tinyint(1) UNSIGNED NOT NULL DEFAULT '2',
-  `language` char(3) NOT NULL DEFAULT ''
+  `language` char(3) NOT NULL DEFAULT '',
+  KEY `idx_word` (`term`),
+  KEY `idx_context` (`context`)
 ) ENGINE=MEMORY DEFAULT CHARSET=utf8mb4;
 
+--
+-- Vyprázdnit tabulku před vkládáním `mul_finder_tokens`
+--
+
+TRUNCATE TABLE `mul_finder_tokens`;
 -- --------------------------------------------------------
 
 --
 -- Struktura tabulky `mul_finder_tokens_aggregate`
 --
 
-CREATE TABLE `mul_finder_tokens_aggregate` (
+CREATE TABLE IF NOT EXISTS `mul_finder_tokens_aggregate` (
   `term_id` int(10) UNSIGNED NOT NULL,
   `map_suffix` char(1) NOT NULL,
   `term` varchar(75) NOT NULL,
@@ -1609,34 +1990,57 @@ CREATE TABLE `mul_finder_tokens_aggregate` (
   `context` tinyint(1) UNSIGNED NOT NULL DEFAULT '2',
   `context_weight` float UNSIGNED NOT NULL,
   `total_weight` float UNSIGNED NOT NULL,
-  `language` char(3) NOT NULL DEFAULT ''
+  `language` char(3) NOT NULL DEFAULT '',
+  KEY `token` (`term`),
+  KEY `keyword_id` (`term_id`)
 ) ENGINE=MEMORY DEFAULT CHARSET=utf8mb4;
 
+--
+-- Vyprázdnit tabulku před vkládáním `mul_finder_tokens_aggregate`
+--
+
+TRUNCATE TABLE `mul_finder_tokens_aggregate`;
 -- --------------------------------------------------------
 
 --
 -- Struktura tabulky `mul_finder_types`
 --
 
-CREATE TABLE `mul_finder_types` (
-  `id` int(10) UNSIGNED NOT NULL,
+CREATE TABLE IF NOT EXISTS `mul_finder_types` (
+  `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT,
   `title` varchar(100) NOT NULL,
-  `mime` varchar(100) NOT NULL
+  `mime` varchar(100) NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `title` (`title`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
+--
+-- Vyprázdnit tabulku před vkládáním `mul_finder_types`
+--
+
+TRUNCATE TABLE `mul_finder_types`;
 -- --------------------------------------------------------
 
 --
 -- Struktura tabulky `mul_kunena_aliases`
 --
 
-CREATE TABLE `mul_kunena_aliases` (
+CREATE TABLE IF NOT EXISTS `mul_kunena_aliases` (
   `alias` varchar(255) NOT NULL,
   `type` varchar(10) NOT NULL,
   `item` varchar(32) NOT NULL,
-  `state` tinyint(4) NOT NULL DEFAULT '0'
+  `state` tinyint(4) NOT NULL DEFAULT '0',
+  UNIQUE KEY `alias` (`alias`),
+  KEY `state` (`state`),
+  KEY `item` (`item`),
+  KEY `type` (`type`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
+--
+-- Vyprázdnit tabulku před vkládáním `mul_kunena_aliases`
+--
+
+TRUNCATE TABLE `mul_kunena_aliases`;
 --
 -- Vypisuji data pro tabulku `mul_kunena_aliases`
 --
@@ -1674,8 +2078,8 @@ INSERT INTO `mul_kunena_aliases` (`alias`, `type`, `item`, `state`) VALUES
 -- Struktura tabulky `mul_kunena_announcement`
 --
 
-CREATE TABLE `mul_kunena_announcement` (
-  `id` int(3) NOT NULL,
+CREATE TABLE IF NOT EXISTS `mul_kunena_announcement` (
+  `id` int(3) NOT NULL AUTO_INCREMENT,
   `title` tinytext NOT NULL,
   `created_by` int(11) NOT NULL DEFAULT '0',
   `sdescription` text NOT NULL,
@@ -1683,17 +2087,23 @@ CREATE TABLE `mul_kunena_announcement` (
   `created` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
   `published` tinyint(1) NOT NULL DEFAULT '0',
   `ordering` tinyint(4) NOT NULL DEFAULT '0',
-  `showdate` tinyint(1) NOT NULL DEFAULT '1'
+  `showdate` tinyint(1) NOT NULL DEFAULT '1',
+  PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
+--
+-- Vyprázdnit tabulku před vkládáním `mul_kunena_announcement`
+--
+
+TRUNCATE TABLE `mul_kunena_announcement`;
 -- --------------------------------------------------------
 
 --
 -- Struktura tabulky `mul_kunena_attachments`
 --
 
-CREATE TABLE `mul_kunena_attachments` (
-  `id` int(11) NOT NULL,
+CREATE TABLE IF NOT EXISTS `mul_kunena_attachments` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
   `mesid` int(11) NOT NULL DEFAULT '0',
   `userid` int(11) NOT NULL DEFAULT '0',
   `protected` tinyint(4) NOT NULL DEFAULT '0',
@@ -1703,17 +2113,28 @@ CREATE TABLE `mul_kunena_attachments` (
   `filetype` varchar(20) NOT NULL,
   `filename` varchar(255) NOT NULL,
   `filename_real` varchar(255) NOT NULL DEFAULT '',
-  `caption` varchar(255) NOT NULL DEFAULT ''
+  `caption` varchar(255) NOT NULL DEFAULT '',
+  PRIMARY KEY (`id`),
+  KEY `mesid` (`mesid`),
+  KEY `userid` (`userid`),
+  KEY `hash` (`hash`),
+  KEY `filename` (`filename`),
+  KEY `filename_real` (`filename_real`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
+--
+-- Vyprázdnit tabulku před vkládáním `mul_kunena_attachments`
+--
+
+TRUNCATE TABLE `mul_kunena_attachments`;
 -- --------------------------------------------------------
 
 --
 -- Struktura tabulky `mul_kunena_categories`
 --
 
-CREATE TABLE `mul_kunena_categories` (
-  `id` int(11) NOT NULL,
+CREATE TABLE IF NOT EXISTS `mul_kunena_categories` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
   `parent_id` int(11) DEFAULT '0',
   `name` tinytext,
   `alias` varchar(255) NOT NULL,
@@ -1746,9 +2167,18 @@ CREATE TABLE `mul_kunena_categories` (
   `last_topic_id` int(11) NOT NULL DEFAULT '0',
   `last_post_id` int(11) NOT NULL DEFAULT '0',
   `last_post_time` int(11) NOT NULL DEFAULT '0',
-  `params` text NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+  `params` text NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `parent_id` (`parent_id`),
+  KEY `category_access` (`accesstype`,`access`),
+  KEY `published_pubaccess_id` (`published`,`pub_access`,`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8;
 
+--
+-- Vyprázdnit tabulku před vkládáním `mul_kunena_categories`
+--
+
+TRUNCATE TABLE `mul_kunena_categories`;
 --
 -- Vypisuji data pro tabulku `mul_kunena_categories`
 --
@@ -1764,11 +2194,17 @@ INSERT INTO `mul_kunena_categories` (`id`, `parent_id`, `name`, `alias`, `icon`,
 -- Struktura tabulky `mul_kunena_configuration`
 --
 
-CREATE TABLE `mul_kunena_configuration` (
+CREATE TABLE IF NOT EXISTS `mul_kunena_configuration` (
   `id` int(11) NOT NULL DEFAULT '0',
-  `params` text
+  `params` text,
+  PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
+--
+-- Vyprázdnit tabulku před vkládáním `mul_kunena_configuration`
+--
+
+TRUNCATE TABLE `mul_kunena_configuration`;
 --
 -- Vypisuji data pro tabulku `mul_kunena_configuration`
 --
@@ -1782,33 +2218,50 @@ INSERT INTO `mul_kunena_configuration` (`id`, `params`) VALUES
 -- Struktura tabulky `mul_kunena_keywords`
 --
 
-CREATE TABLE `mul_kunena_keywords` (
-  `id` int(11) NOT NULL,
+CREATE TABLE IF NOT EXISTS `mul_kunena_keywords` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
   `name` varchar(40) NOT NULL,
   `public_count` int(11) NOT NULL,
-  `total_count` int(11) NOT NULL
+  `total_count` int(11) NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `name` (`name`),
+  KEY `public_count` (`public_count`),
+  KEY `total_count` (`total_count`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
+--
+-- Vyprázdnit tabulku před vkládáním `mul_kunena_keywords`
+--
+
+TRUNCATE TABLE `mul_kunena_keywords`;
 -- --------------------------------------------------------
 
 --
 -- Struktura tabulky `mul_kunena_keywords_map`
 --
 
-CREATE TABLE `mul_kunena_keywords_map` (
+CREATE TABLE IF NOT EXISTS `mul_kunena_keywords_map` (
   `keyword_id` int(11) NOT NULL,
   `user_id` int(11) NOT NULL,
-  `topic_id` int(11) NOT NULL
+  `topic_id` int(11) NOT NULL,
+  UNIQUE KEY `keyword_user_topic` (`keyword_id`,`user_id`,`topic_id`),
+  KEY `user_id` (`user_id`),
+  KEY `topic_user` (`topic_id`,`user_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
+--
+-- Vyprázdnit tabulku před vkládáním `mul_kunena_keywords_map`
+--
+
+TRUNCATE TABLE `mul_kunena_keywords_map`;
 -- --------------------------------------------------------
 
 --
 -- Struktura tabulky `mul_kunena_messages`
 --
 
-CREATE TABLE `mul_kunena_messages` (
-  `id` int(11) NOT NULL,
+CREATE TABLE IF NOT EXISTS `mul_kunena_messages` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
   `parent` int(11) DEFAULT '0',
   `thread` int(11) DEFAULT '0',
   `catid` int(11) NOT NULL DEFAULT '0',
@@ -1826,9 +2279,23 @@ CREATE TABLE `mul_kunena_messages` (
   `moved` tinyint(4) DEFAULT '0',
   `modified_by` int(7) DEFAULT NULL,
   `modified_time` int(11) DEFAULT NULL,
-  `modified_reason` tinytext
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+  `modified_reason` tinytext,
+  PRIMARY KEY (`id`),
+  KEY `thread` (`thread`),
+  KEY `ip` (`ip`),
+  KEY `userid` (`userid`),
+  KEY `time` (`time`),
+  KEY `locked` (`locked`),
+  KEY `hold_time` (`hold`,`time`),
+  KEY `parent_hits` (`parent`,`hits`),
+  KEY `catid_parent` (`catid`,`parent`)
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8;
 
+--
+-- Vyprázdnit tabulku před vkládáním `mul_kunena_messages`
+--
+
+TRUNCATE TABLE `mul_kunena_messages`;
 --
 -- Vypisuji data pro tabulku `mul_kunena_messages`
 --
@@ -1842,11 +2309,17 @@ INSERT INTO `mul_kunena_messages` (`id`, `parent`, `thread`, `catid`, `name`, `u
 -- Struktura tabulky `mul_kunena_messages_text`
 --
 
-CREATE TABLE `mul_kunena_messages_text` (
+CREATE TABLE IF NOT EXISTS `mul_kunena_messages_text` (
   `mesid` int(11) NOT NULL DEFAULT '0',
-  `message` text NOT NULL
+  `message` text NOT NULL,
+  PRIMARY KEY (`mesid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
+--
+-- Vyprázdnit tabulku před vkládáním `mul_kunena_messages_text`
+--
+
+TRUNCATE TABLE `mul_kunena_messages_text`;
 --
 -- Vypisuji data pro tabulku `mul_kunena_messages_text`
 --
@@ -1860,54 +2333,80 @@ INSERT INTO `mul_kunena_messages_text` (`mesid`, `message`) VALUES
 -- Struktura tabulky `mul_kunena_polls`
 --
 
-CREATE TABLE `mul_kunena_polls` (
-  `id` int(11) NOT NULL,
+CREATE TABLE IF NOT EXISTS `mul_kunena_polls` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
   `title` varchar(100) NOT NULL,
   `threadid` int(11) NOT NULL,
-  `polltimetolive` datetime DEFAULT NULL
+  `polltimetolive` datetime DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `threadid` (`threadid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
+--
+-- Vyprázdnit tabulku před vkládáním `mul_kunena_polls`
+--
+
+TRUNCATE TABLE `mul_kunena_polls`;
 -- --------------------------------------------------------
 
 --
 -- Struktura tabulky `mul_kunena_polls_options`
 --
 
-CREATE TABLE `mul_kunena_polls_options` (
-  `id` int(11) NOT NULL,
+CREATE TABLE IF NOT EXISTS `mul_kunena_polls_options` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
   `pollid` int(11) DEFAULT NULL,
   `text` varchar(100) DEFAULT NULL,
-  `votes` int(11) DEFAULT NULL
+  `votes` int(11) DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `pollid` (`pollid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
+--
+-- Vyprázdnit tabulku před vkládáním `mul_kunena_polls_options`
+--
+
+TRUNCATE TABLE `mul_kunena_polls_options`;
 -- --------------------------------------------------------
 
 --
 -- Struktura tabulky `mul_kunena_polls_users`
 --
 
-CREATE TABLE `mul_kunena_polls_users` (
+CREATE TABLE IF NOT EXISTS `mul_kunena_polls_users` (
   `pollid` int(11) DEFAULT NULL,
   `userid` int(11) DEFAULT NULL,
   `votes` int(11) DEFAULT NULL,
   `lasttime` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
-  `lastvote` int(11) DEFAULT NULL
+  `lastvote` int(11) DEFAULT NULL,
+  UNIQUE KEY `pollid` (`pollid`,`userid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
+--
+-- Vyprázdnit tabulku před vkládáním `mul_kunena_polls_users`
+--
+
+TRUNCATE TABLE `mul_kunena_polls_users`;
 -- --------------------------------------------------------
 
 --
 -- Struktura tabulky `mul_kunena_ranks`
 --
 
-CREATE TABLE `mul_kunena_ranks` (
-  `rank_id` mediumint(8) UNSIGNED NOT NULL,
+CREATE TABLE IF NOT EXISTS `mul_kunena_ranks` (
+  `rank_id` mediumint(8) UNSIGNED NOT NULL AUTO_INCREMENT,
   `rank_title` varchar(255) NOT NULL DEFAULT '',
   `rank_min` mediumint(8) UNSIGNED NOT NULL DEFAULT '0',
   `rank_special` tinyint(1) UNSIGNED NOT NULL DEFAULT '0',
-  `rank_image` varchar(255) NOT NULL DEFAULT ''
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+  `rank_image` varchar(255) NOT NULL DEFAULT '',
+  PRIMARY KEY (`rank_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=11 DEFAULT CHARSET=utf8;
 
+--
+-- Vyprázdnit tabulku před vkládáním `mul_kunena_ranks`
+--
+
+TRUNCATE TABLE `mul_kunena_ranks`;
 --
 -- Vypisuji data pro tabulku `mul_kunena_ranks`
 --
@@ -1930,14 +2429,21 @@ INSERT INTO `mul_kunena_ranks` (`rank_id`, `rank_title`, `rank_min`, `rank_speci
 -- Struktura tabulky `mul_kunena_sessions`
 --
 
-CREATE TABLE `mul_kunena_sessions` (
+CREATE TABLE IF NOT EXISTS `mul_kunena_sessions` (
   `userid` int(11) NOT NULL DEFAULT '0',
   `allowed` text,
   `lasttime` int(11) NOT NULL DEFAULT '0',
   `readtopics` text,
-  `currvisit` int(11) NOT NULL DEFAULT '0'
+  `currvisit` int(11) NOT NULL DEFAULT '0',
+  PRIMARY KEY (`userid`),
+  KEY `currvisit` (`currvisit`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
+--
+-- Vyprázdnit tabulku před vkládáním `mul_kunena_sessions`
+--
+
+TRUNCATE TABLE `mul_kunena_sessions`;
 --
 -- Vypisuji data pro tabulku `mul_kunena_sessions`
 --
@@ -1951,14 +2457,20 @@ INSERT INTO `mul_kunena_sessions` (`userid`, `allowed`, `lasttime`, `readtopics`
 -- Struktura tabulky `mul_kunena_smileys`
 --
 
-CREATE TABLE `mul_kunena_smileys` (
-  `id` int(4) NOT NULL,
+CREATE TABLE IF NOT EXISTS `mul_kunena_smileys` (
+  `id` int(4) NOT NULL AUTO_INCREMENT,
   `code` varchar(12) NOT NULL DEFAULT '',
   `location` varchar(50) NOT NULL DEFAULT '',
   `greylocation` varchar(60) NOT NULL DEFAULT '',
-  `emoticonbar` tinyint(4) NOT NULL DEFAULT '0'
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+  `emoticonbar` tinyint(4) NOT NULL DEFAULT '0',
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=67 DEFAULT CHARSET=utf8;
 
+--
+-- Vyprázdnit tabulku před vkládáním `mul_kunena_smileys`
+--
+
+TRUNCATE TABLE `mul_kunena_smileys`;
 --
 -- Vypisuji data pro tabulku `mul_kunena_smileys`
 --
@@ -2037,21 +2549,29 @@ INSERT INTO `mul_kunena_smileys` (`id`, `code`, `location`, `greylocation`, `emo
 -- Struktura tabulky `mul_kunena_thankyou`
 --
 
-CREATE TABLE `mul_kunena_thankyou` (
+CREATE TABLE IF NOT EXISTS `mul_kunena_thankyou` (
   `postid` int(11) NOT NULL,
   `userid` int(11) NOT NULL,
   `targetuserid` int(11) NOT NULL,
-  `time` datetime NOT NULL
+  `time` datetime NOT NULL,
+  UNIQUE KEY `postid` (`postid`,`userid`),
+  KEY `userid` (`userid`),
+  KEY `targetuserid` (`targetuserid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
+--
+-- Vyprázdnit tabulku před vkládáním `mul_kunena_thankyou`
+--
+
+TRUNCATE TABLE `mul_kunena_thankyou`;
 -- --------------------------------------------------------
 
 --
 -- Struktura tabulky `mul_kunena_topics`
 --
 
-CREATE TABLE `mul_kunena_topics` (
-  `id` int(11) NOT NULL,
+CREATE TABLE IF NOT EXISTS `mul_kunena_topics` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
   `category_id` int(11) NOT NULL DEFAULT '0',
   `subject` tinytext,
   `icon_id` int(11) NOT NULL DEFAULT '0',
@@ -2073,9 +2593,25 @@ CREATE TABLE `mul_kunena_topics` (
   `last_post_userid` int(11) NOT NULL DEFAULT '0',
   `last_post_message` text,
   `last_post_guest_name` tinytext,
-  `params` text NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+  `params` text NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `category_id` (`category_id`),
+  KEY `locked` (`locked`),
+  KEY `hold` (`hold`),
+  KEY `posts` (`posts`),
+  KEY `hits` (`hits`),
+  KEY `first_post_userid` (`first_post_userid`),
+  KEY `last_post_userid` (`last_post_userid`),
+  KEY `first_post_time` (`first_post_time`),
+  KEY `last_post_time` (`last_post_time`),
+  KEY `last_post_id` (`last_post_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8;
 
+--
+-- Vyprázdnit tabulku před vkládáním `mul_kunena_topics`
+--
+
+TRUNCATE TABLE `mul_kunena_topics`;
 --
 -- Vypisuji data pro tabulku `mul_kunena_topics`
 --
@@ -2089,7 +2625,7 @@ INSERT INTO `mul_kunena_topics` (`id`, `category_id`, `subject`, `icon_id`, `loc
 -- Struktura tabulky `mul_kunena_users`
 --
 
-CREATE TABLE `mul_kunena_users` (
+CREATE TABLE IF NOT EXISTS `mul_kunena_users` (
   `userid` int(11) NOT NULL DEFAULT '0',
   `status` tinyint(1) NOT NULL DEFAULT '0',
   `status_text` varchar(255) NOT NULL,
@@ -2131,9 +2667,20 @@ CREATE TABLE `mul_kunena_users` (
   `showOnline` tinyint(1) NOT NULL DEFAULT '1',
   `canSubscribe` tinyint(1) NOT NULL DEFAULT '-1',
   `userListtime` int(11) DEFAULT '-2',
-  `thankyou` int(11) DEFAULT '0'
+  `thankyou` int(11) DEFAULT '0',
+  PRIMARY KEY (`userid`),
+  KEY `group_id` (`group_id`),
+  KEY `posts` (`posts`),
+  KEY `uhits` (`uhits`),
+  KEY `banned` (`banned`),
+  KEY `moderator` (`moderator`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
+--
+-- Vyprázdnit tabulku před vkládáním `mul_kunena_users`
+--
+
+TRUNCATE TABLE `mul_kunena_users`;
 --
 -- Vypisuji data pro tabulku `mul_kunena_users`
 --
@@ -2147,8 +2694,8 @@ INSERT INTO `mul_kunena_users` (`userid`, `status`, `status_text`, `view`, `sign
 -- Struktura tabulky `mul_kunena_users_banned`
 --
 
-CREATE TABLE `mul_kunena_users_banned` (
-  `id` int(11) NOT NULL,
+CREATE TABLE IF NOT EXISTS `mul_kunena_users_banned` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
   `userid` int(11) DEFAULT NULL,
   `ip` varchar(128) DEFAULT NULL,
   `blocked` tinyint(4) NOT NULL DEFAULT '0',
@@ -2160,24 +2707,42 @@ CREATE TABLE `mul_kunena_users_banned` (
   `modified_by` int(11) DEFAULT NULL,
   `modified_time` datetime DEFAULT NULL,
   `comments` text,
-  `params` text
+  `params` text,
+  PRIMARY KEY (`id`),
+  KEY `userid` (`userid`),
+  KEY `ip` (`ip`),
+  KEY `expiration` (`expiration`),
+  KEY `created_time` (`created_time`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
+--
+-- Vyprázdnit tabulku před vkládáním `mul_kunena_users_banned`
+--
+
+TRUNCATE TABLE `mul_kunena_users_banned`;
 -- --------------------------------------------------------
 
 --
 -- Struktura tabulky `mul_kunena_user_categories`
 --
 
-CREATE TABLE `mul_kunena_user_categories` (
+CREATE TABLE IF NOT EXISTS `mul_kunena_user_categories` (
   `user_id` int(11) NOT NULL,
   `category_id` int(11) NOT NULL,
   `role` tinyint(4) NOT NULL DEFAULT '0',
   `allreadtime` int(11) NOT NULL DEFAULT '0',
   `subscribed` tinyint(4) NOT NULL DEFAULT '0',
-  `params` text NOT NULL
+  `params` text NOT NULL,
+  PRIMARY KEY (`user_id`,`category_id`),
+  KEY `category_subscribed` (`category_id`,`subscribed`),
+  KEY `role` (`role`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
+--
+-- Vyprázdnit tabulku před vkládáním `mul_kunena_user_categories`
+--
+
+TRUNCATE TABLE `mul_kunena_user_categories`;
 --
 -- Vypisuji data pro tabulku `mul_kunena_user_categories`
 --
@@ -2191,21 +2756,29 @@ INSERT INTO `mul_kunena_user_categories` (`user_id`, `category_id`, `role`, `all
 -- Struktura tabulky `mul_kunena_user_read`
 --
 
-CREATE TABLE `mul_kunena_user_read` (
+CREATE TABLE IF NOT EXISTS `mul_kunena_user_read` (
   `user_id` int(11) NOT NULL,
   `topic_id` int(11) NOT NULL,
   `category_id` int(11) NOT NULL,
   `message_id` int(11) NOT NULL,
-  `time` int(11) NOT NULL
+  `time` int(11) NOT NULL,
+  UNIQUE KEY `user_topic_id` (`user_id`,`topic_id`),
+  KEY `category_user_id` (`category_id`,`user_id`),
+  KEY `time` (`time`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
+--
+-- Vyprázdnit tabulku před vkládáním `mul_kunena_user_read`
+--
+
+TRUNCATE TABLE `mul_kunena_user_read`;
 -- --------------------------------------------------------
 
 --
 -- Struktura tabulky `mul_kunena_user_topics`
 --
 
-CREATE TABLE `mul_kunena_user_topics` (
+CREATE TABLE IF NOT EXISTS `mul_kunena_user_topics` (
   `user_id` int(11) NOT NULL DEFAULT '0',
   `topic_id` int(11) NOT NULL DEFAULT '0',
   `category_id` int(11) NOT NULL,
@@ -2214,9 +2787,20 @@ CREATE TABLE `mul_kunena_user_topics` (
   `owner` tinyint(4) NOT NULL DEFAULT '0',
   `favorite` tinyint(4) NOT NULL DEFAULT '0',
   `subscribed` tinyint(4) NOT NULL DEFAULT '0',
-  `params` text NOT NULL
+  `params` text NOT NULL,
+  UNIQUE KEY `user_topic_id` (`user_id`,`topic_id`),
+  KEY `topic_id` (`topic_id`),
+  KEY `posts` (`posts`),
+  KEY `owner` (`owner`),
+  KEY `favorite` (`favorite`),
+  KEY `subscribed` (`subscribed`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
+--
+-- Vyprázdnit tabulku před vkládáním `mul_kunena_user_topics`
+--
+
+TRUNCATE TABLE `mul_kunena_user_topics`;
 --
 -- Vypisuji data pro tabulku `mul_kunena_user_topics`
 --
@@ -2230,16 +2814,22 @@ INSERT INTO `mul_kunena_user_topics` (`user_id`, `topic_id`, `category_id`, `pos
 -- Struktura tabulky `mul_kunena_version`
 --
 
-CREATE TABLE `mul_kunena_version` (
-  `id` int(11) NOT NULL,
+CREATE TABLE IF NOT EXISTS `mul_kunena_version` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
   `version` varchar(20) NOT NULL,
   `versiondate` date NOT NULL,
   `installdate` date NOT NULL,
   `build` varchar(20) NOT NULL,
   `versionname` varchar(40) DEFAULT NULL,
-  `state` text NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+  `state` text NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8;
 
+--
+-- Vyprázdnit tabulku před vkládáním `mul_kunena_version`
+--
+
+TRUNCATE TABLE `mul_kunena_version`;
 --
 -- Vypisuji data pro tabulku `mul_kunena_version`
 --
@@ -2254,8 +2844,8 @@ INSERT INTO `mul_kunena_version` (`id`, `version`, `versiondate`, `installdate`,
 -- Struktura tabulky `mul_languages`
 --
 
-CREATE TABLE `mul_languages` (
-  `lang_id` int(11) UNSIGNED NOT NULL,
+CREATE TABLE IF NOT EXISTS `mul_languages` (
+  `lang_id` int(11) UNSIGNED NOT NULL AUTO_INCREMENT,
   `asset_id` int(10) UNSIGNED NOT NULL DEFAULT '0',
   `lang_code` char(7) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL,
   `title` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL,
@@ -2268,9 +2858,19 @@ CREATE TABLE `mul_languages` (
   `sitename` varchar(1024) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
   `published` int(11) NOT NULL DEFAULT '0',
   `access` int(10) UNSIGNED NOT NULL DEFAULT '0',
-  `ordering` int(11) NOT NULL DEFAULT '0'
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+  `ordering` int(11) NOT NULL DEFAULT '0',
+  PRIMARY KEY (`lang_id`),
+  UNIQUE KEY `idx_sef` (`sef`),
+  UNIQUE KEY `idx_langcode` (`lang_code`),
+  KEY `idx_access` (`access`),
+  KEY `idx_ordering` (`ordering`)
+) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+--
+-- Vyprázdnit tabulku před vkládáním `mul_languages`
+--
+
+TRUNCATE TABLE `mul_languages`;
 --
 -- Vypisuji data pro tabulku `mul_languages`
 --
@@ -2288,8 +2888,8 @@ INSERT INTO `mul_languages` (`lang_id`, `asset_id`, `lang_code`, `title`, `title
 -- Struktura tabulky `mul_menu`
 --
 
-CREATE TABLE `mul_menu` (
-  `id` int(11) NOT NULL,
+CREATE TABLE IF NOT EXISTS `mul_menu` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
   `menutype` varchar(24) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT 'The type of menu this item belongs to. FK to #__menu_types.menutype',
   `title` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT 'The display title of the menu item.',
   `alias` varchar(400) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL COMMENT 'The SEF alias of the menu item.',
@@ -2312,9 +2912,22 @@ CREATE TABLE `mul_menu` (
   `rgt` int(11) NOT NULL DEFAULT '0' COMMENT 'Nested set rgt.',
   `home` tinyint(3) UNSIGNED NOT NULL DEFAULT '0' COMMENT 'Indicates if this menu item is the home or default page.',
   `language` char(7) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
-  `client_id` tinyint(4) NOT NULL DEFAULT '0'
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+  `client_id` tinyint(4) NOT NULL DEFAULT '0',
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `idx_client_id_parent_id_alias_language` (`client_id`,`parent_id`,`alias`(100),`language`),
+  KEY `idx_componentid` (`component_id`,`menutype`,`published`,`access`),
+  KEY `idx_menutype` (`menutype`),
+  KEY `idx_left_right` (`lft`,`rgt`),
+  KEY `idx_language` (`language`),
+  KEY `idx_alias` (`alias`(100)),
+  KEY `idx_path` (`path`(100))
+) ENGINE=InnoDB AUTO_INCREMENT=634 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+--
+-- Vyprázdnit tabulku před vkládáním `mul_menu`
+--
+
+TRUNCATE TABLE `mul_menu`;
 --
 -- Vypisuji data pro tabulku `mul_menu`
 --
@@ -2490,15 +3103,22 @@ INSERT INTO `mul_menu` (`id`, `menutype`, `title`, `alias`, `note`, `path`, `lin
 -- Struktura tabulky `mul_menu_types`
 --
 
-CREATE TABLE `mul_menu_types` (
-  `id` int(10) UNSIGNED NOT NULL,
+CREATE TABLE IF NOT EXISTS `mul_menu_types` (
+  `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT,
   `asset_id` int(10) UNSIGNED NOT NULL DEFAULT '0',
   `menutype` varchar(24) COLLATE utf8mb4_unicode_ci NOT NULL,
   `title` varchar(48) COLLATE utf8mb4_unicode_ci NOT NULL,
   `description` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
-  `client_id` int(11) NOT NULL DEFAULT '0'
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+  `client_id` int(11) NOT NULL DEFAULT '0',
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `idx_menutype` (`menutype`)
+) ENGINE=InnoDB AUTO_INCREMENT=20 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+--
+-- Vyprázdnit tabulku před vkládáním `mul_menu_types`
+--
+
+TRUNCATE TABLE `mul_menu_types`;
 --
 -- Vypisuji data pro tabulku `mul_menu_types`
 --
@@ -2525,8 +3145,8 @@ INSERT INTO `mul_menu_types` (`id`, `asset_id`, `menutype`, `title`, `descriptio
 -- Struktura tabulky `mul_messages`
 --
 
-CREATE TABLE `mul_messages` (
-  `message_id` int(10) UNSIGNED NOT NULL,
+CREATE TABLE IF NOT EXISTS `mul_messages` (
+  `message_id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT,
   `user_id_from` int(10) UNSIGNED NOT NULL DEFAULT '0',
   `user_id_to` int(10) UNSIGNED NOT NULL DEFAULT '0',
   `folder_id` tinyint(3) UNSIGNED NOT NULL DEFAULT '0',
@@ -2534,29 +3154,42 @@ CREATE TABLE `mul_messages` (
   `state` tinyint(1) NOT NULL DEFAULT '0',
   `priority` tinyint(1) UNSIGNED NOT NULL DEFAULT '0',
   `subject` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
-  `message` mediumtext COLLATE utf8mb4_unicode_ci NOT NULL
+  `message` mediumtext COLLATE utf8mb4_unicode_ci NOT NULL,
+  PRIMARY KEY (`message_id`),
+  KEY `useridto_state` (`user_id_to`,`state`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+--
+-- Vyprázdnit tabulku před vkládáním `mul_messages`
+--
+
+TRUNCATE TABLE `mul_messages`;
 -- --------------------------------------------------------
 
 --
 -- Struktura tabulky `mul_messages_cfg`
 --
 
-CREATE TABLE `mul_messages_cfg` (
+CREATE TABLE IF NOT EXISTS `mul_messages_cfg` (
   `user_id` int(10) UNSIGNED NOT NULL DEFAULT '0',
   `cfg_name` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
-  `cfg_value` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT ''
+  `cfg_value` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
+  UNIQUE KEY `idx_user_var_name` (`user_id`,`cfg_name`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+--
+-- Vyprázdnit tabulku před vkládáním `mul_messages_cfg`
+--
+
+TRUNCATE TABLE `mul_messages_cfg`;
 -- --------------------------------------------------------
 
 --
 -- Struktura tabulky `mul_modules`
 --
 
-CREATE TABLE `mul_modules` (
-  `id` int(11) NOT NULL,
+CREATE TABLE IF NOT EXISTS `mul_modules` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
   `asset_id` int(10) UNSIGNED NOT NULL DEFAULT '0' COMMENT 'FK to the #__assets table.',
   `title` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
   `note` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
@@ -2573,9 +3206,18 @@ CREATE TABLE `mul_modules` (
   `showtitle` tinyint(3) UNSIGNED NOT NULL DEFAULT '1',
   `params` mediumtext COLLATE utf8mb4_unicode_ci NOT NULL,
   `client_id` tinyint(4) NOT NULL DEFAULT '0',
-  `language` char(7) COLLATE utf8mb4_unicode_ci NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+  `language` char(7) COLLATE utf8mb4_unicode_ci NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `published` (`published`,`access`),
+  KEY `newsfeeds` (`module`,`published`),
+  KEY `idx_language` (`language`)
+) ENGINE=InnoDB AUTO_INCREMENT=155 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+--
+-- Vyprázdnit tabulku před vkládáním `mul_modules`
+--
+
+TRUNCATE TABLE `mul_modules`;
 --
 -- Vypisuji data pro tabulku `mul_modules`
 --
@@ -2662,11 +3304,17 @@ INSERT INTO `mul_modules` (`id`, `asset_id`, `title`, `note`, `content`, `orderi
 -- Struktura tabulky `mul_modules_menu`
 --
 
-CREATE TABLE `mul_modules_menu` (
+CREATE TABLE IF NOT EXISTS `mul_modules_menu` (
   `moduleid` int(11) NOT NULL DEFAULT '0',
-  `menuid` int(11) NOT NULL DEFAULT '0'
+  `menuid` int(11) NOT NULL DEFAULT '0',
+  PRIMARY KEY (`moduleid`,`menuid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+--
+-- Vyprázdnit tabulku před vkládáním `mul_modules_menu`
+--
+
+TRUNCATE TABLE `mul_modules_menu`;
 --
 -- Vypisuji data pro tabulku `mul_modules_menu`
 --
@@ -2804,9 +3452,9 @@ INSERT INTO `mul_modules_menu` (`moduleid`, `menuid`) VALUES
 -- Struktura tabulky `mul_newsfeeds`
 --
 
-CREATE TABLE `mul_newsfeeds` (
+CREATE TABLE IF NOT EXISTS `mul_newsfeeds` (
   `catid` int(11) NOT NULL DEFAULT '0',
-  `id` int(10) UNSIGNED NOT NULL,
+  `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT,
   `name` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
   `alias` varchar(400) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL DEFAULT '',
   `link` varchar(2048) COLLATE utf8mb4_unicode_ci NOT NULL,
@@ -2834,9 +3482,22 @@ CREATE TABLE `mul_newsfeeds` (
   `description` mediumtext COLLATE utf8mb4_unicode_ci NOT NULL,
   `version` int(10) UNSIGNED NOT NULL DEFAULT '1',
   `hits` int(10) UNSIGNED NOT NULL DEFAULT '0',
-  `images` mediumtext COLLATE utf8mb4_unicode_ci NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+  `images` mediumtext COLLATE utf8mb4_unicode_ci NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `idx_access` (`access`),
+  KEY `idx_checkout` (`checked_out`),
+  KEY `idx_state` (`published`),
+  KEY `idx_catid` (`catid`),
+  KEY `idx_createdby` (`created_by`),
+  KEY `idx_language` (`language`),
+  KEY `idx_xreference` (`xreference`)
+) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+--
+-- Vyprázdnit tabulku před vkládáním `mul_newsfeeds`
+--
+
+TRUNCATE TABLE `mul_newsfeeds`;
 --
 -- Vypisuji data pro tabulku `mul_newsfeeds`
 --
@@ -2853,21 +3514,27 @@ INSERT INTO `mul_newsfeeds` (`catid`, `id`, `name`, `alias`, `link`, `published`
 -- Struktura tabulky `mul_overrider`
 --
 
-CREATE TABLE `mul_overrider` (
-  `id` int(10) NOT NULL COMMENT 'Primary Key',
+CREATE TABLE IF NOT EXISTS `mul_overrider` (
+  `id` int(10) NOT NULL AUTO_INCREMENT COMMENT 'Primary Key',
   `constant` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
   `string` mediumtext COLLATE utf8mb4_unicode_ci NOT NULL,
-  `file` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL
+  `file` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+--
+-- Vyprázdnit tabulku před vkládáním `mul_overrider`
+--
+
+TRUNCATE TABLE `mul_overrider`;
 -- --------------------------------------------------------
 
 --
 -- Struktura tabulky `mul_postinstall_messages`
 --
 
-CREATE TABLE `mul_postinstall_messages` (
-  `postinstall_message_id` bigint(20) UNSIGNED NOT NULL,
+CREATE TABLE IF NOT EXISTS `mul_postinstall_messages` (
+  `postinstall_message_id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT,
   `extension_id` bigint(20) NOT NULL DEFAULT '700' COMMENT 'FK to #__extensions',
   `title_key` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '' COMMENT 'Lang key for the title',
   `description_key` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '' COMMENT 'Lang key for description',
@@ -2880,9 +3547,15 @@ CREATE TABLE `mul_postinstall_messages` (
   `condition_file` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'RAD URI to file holding display condition method',
   `condition_method` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'Display condition method, must return boolean',
   `version_introduced` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '3.2.0' COMMENT 'Version when this message was introduced',
-  `enabled` tinyint(3) NOT NULL DEFAULT '1'
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+  `enabled` tinyint(3) NOT NULL DEFAULT '1',
+  PRIMARY KEY (`postinstall_message_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=12 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+--
+-- Vyprázdnit tabulku před vkládáním `mul_postinstall_messages`
+--
+
+TRUNCATE TABLE `mul_postinstall_messages`;
 --
 -- Vypisuji data pro tabulku `mul_postinstall_messages`
 --
@@ -2906,8 +3579,8 @@ INSERT INTO `mul_postinstall_messages` (`postinstall_message_id`, `extension_id`
 -- Struktura tabulky `mul_redirect_links`
 --
 
-CREATE TABLE `mul_redirect_links` (
-  `id` int(10) UNSIGNED NOT NULL,
+CREATE TABLE IF NOT EXISTS `mul_redirect_links` (
+  `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT,
   `old_url` varchar(2048) COLLATE utf8mb4_unicode_ci NOT NULL,
   `new_url` varchar(2048) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `referer` varchar(2048) COLLATE utf8mb4_unicode_ci NOT NULL,
@@ -2916,23 +3589,37 @@ CREATE TABLE `mul_redirect_links` (
   `published` tinyint(4) NOT NULL,
   `created_date` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
   `modified_date` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
-  `header` smallint(3) NOT NULL DEFAULT '301'
+  `header` smallint(3) NOT NULL DEFAULT '301',
+  PRIMARY KEY (`id`),
+  KEY `idx_link_modifed` (`modified_date`),
+  KEY `idx_old_url` (`old_url`(100))
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+--
+-- Vyprázdnit tabulku před vkládáním `mul_redirect_links`
+--
+
+TRUNCATE TABLE `mul_redirect_links`;
 -- --------------------------------------------------------
 
 --
 -- Struktura tabulky `mul_revslider_css`
 --
 
-CREATE TABLE `mul_revslider_css` (
-  `id` int(10) UNSIGNED NOT NULL,
+CREATE TABLE IF NOT EXISTS `mul_revslider_css` (
+  `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT,
   `handle` text NOT NULL,
   `settings` text,
   `hover` text,
-  `params` text NOT NULL
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+  `params` text NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=MyISAM AUTO_INCREMENT=45 DEFAULT CHARSET=utf8;
 
+--
+-- Vyprázdnit tabulku před vkládáním `mul_revslider_css`
+--
+
+TRUNCATE TABLE `mul_revslider_css`;
 --
 -- Vypisuji data pro tabulku `mul_revslider_css`
 --
@@ -2989,12 +3676,18 @@ INSERT INTO `mul_revslider_css` (`id`, `handle`, `settings`, `hover`, `params`) 
 -- Struktura tabulky `mul_revslider_layer_animations`
 --
 
-CREATE TABLE `mul_revslider_layer_animations` (
-  `id` int(10) UNSIGNED NOT NULL,
+CREATE TABLE IF NOT EXISTS `mul_revslider_layer_animations` (
+  `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT,
   `handle` text NOT NULL,
-  `params` text NOT NULL
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+  `params` text NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=MyISAM AUTO_INCREMENT=5 DEFAULT CHARSET=utf8;
 
+--
+-- Vyprázdnit tabulku před vkládáním `mul_revslider_layer_animations`
+--
+
+TRUNCATE TABLE `mul_revslider_layer_animations`;
 --
 -- Vypisuji data pro tabulku `mul_revslider_layer_animations`
 --
@@ -3011,25 +3704,37 @@ INSERT INTO `mul_revslider_layer_animations` (`id`, `handle`, `params`) VALUES
 -- Struktura tabulky `mul_revslider_settings`
 --
 
-CREATE TABLE `mul_revslider_settings` (
-  `id` int(10) UNSIGNED NOT NULL,
+CREATE TABLE IF NOT EXISTS `mul_revslider_settings` (
+  `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT,
   `general` text NOT NULL,
-  `params` text NOT NULL
+  `params` text NOT NULL,
+  PRIMARY KEY (`id`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
+--
+-- Vyprázdnit tabulku před vkládáním `mul_revslider_settings`
+--
+
+TRUNCATE TABLE `mul_revslider_settings`;
 -- --------------------------------------------------------
 
 --
 -- Struktura tabulky `mul_revslider_sliders`
 --
 
-CREATE TABLE `mul_revslider_sliders` (
-  `id` int(10) UNSIGNED NOT NULL,
+CREATE TABLE IF NOT EXISTS `mul_revslider_sliders` (
+  `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT,
   `title` varchar(255) NOT NULL,
   `alias` varchar(255) NOT NULL DEFAULT '',
-  `params` text NOT NULL
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+  `params` text NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=MyISAM AUTO_INCREMENT=8 DEFAULT CHARSET=utf8;
 
+--
+-- Vyprázdnit tabulku před vkládáním `mul_revslider_sliders`
+--
+
+TRUNCATE TABLE `mul_revslider_sliders`;
 --
 -- Vypisuji data pro tabulku `mul_revslider_sliders`
 --
@@ -3049,14 +3754,20 @@ INSERT INTO `mul_revslider_sliders` (`id`, `title`, `alias`, `params`) VALUES
 -- Struktura tabulky `mul_revslider_slides`
 --
 
-CREATE TABLE `mul_revslider_slides` (
-  `id` int(10) UNSIGNED NOT NULL,
+CREATE TABLE IF NOT EXISTS `mul_revslider_slides` (
+  `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT,
   `slider_id` int(10) UNSIGNED NOT NULL DEFAULT '0',
   `slide_order` int(11) NOT NULL,
   `params` text NOT NULL,
-  `layers` text NOT NULL
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+  `layers` text NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=MyISAM AUTO_INCREMENT=29 DEFAULT CHARSET=utf8;
 
+--
+-- Vyprázdnit tabulku před vkládáním `mul_revslider_slides`
+--
+
+TRUNCATE TABLE `mul_revslider_slides`;
 --
 -- Vypisuji data pro tabulku `mul_revslider_slides`
 --
@@ -3093,27 +3804,39 @@ INSERT INTO `mul_revslider_slides` (`id`, `slider_id`, `slide_order`, `params`, 
 -- Struktura tabulky `mul_revslider_static_slides`
 --
 
-CREATE TABLE `mul_revslider_static_slides` (
-  `id` int(10) UNSIGNED NOT NULL,
+CREATE TABLE IF NOT EXISTS `mul_revslider_static_slides` (
+  `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT,
   `slider_id` int(9) NOT NULL,
   `params` text NOT NULL,
-  `layers` text NOT NULL
+  `layers` text NOT NULL,
+  PRIMARY KEY (`id`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
+--
+-- Vyprázdnit tabulku před vkládáním `mul_revslider_static_slides`
+--
+
+TRUNCATE TABLE `mul_revslider_static_slides`;
 -- --------------------------------------------------------
 
 --
 -- Struktura tabulky `mul_rokcommon_configs`
 --
 
-CREATE TABLE `mul_rokcommon_configs` (
-  `id` int(11) NOT NULL,
+CREATE TABLE IF NOT EXISTS `mul_rokcommon_configs` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
   `extension` varchar(45) NOT NULL DEFAULT '',
   `type` varchar(45) NOT NULL,
   `file` varchar(256) NOT NULL,
-  `priority` int(10) NOT NULL DEFAULT '10'
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+  `priority` int(10) NOT NULL DEFAULT '10',
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=11 DEFAULT CHARSET=utf8;
 
+--
+-- Vyprázdnit tabulku před vkládáním `mul_rokcommon_configs`
+--
+
+TRUNCATE TABLE `mul_rokcommon_configs`;
 --
 -- Vypisuji data pro tabulku `mul_rokcommon_configs`
 --
@@ -3128,15 +3851,23 @@ INSERT INTO `mul_rokcommon_configs` (`id`, `extension`, `type`, `file`, `priorit
 -- Struktura tabulky `mul_roksprocket_items`
 --
 
-CREATE TABLE `mul_roksprocket_items` (
-  `id` int(11) NOT NULL,
+CREATE TABLE IF NOT EXISTS `mul_roksprocket_items` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
   `module_id` varchar(45) NOT NULL,
   `provider` varchar(45) NOT NULL,
   `provider_id` varchar(45) NOT NULL,
   `order` int(10) UNSIGNED NOT NULL,
-  `params` text
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+  `params` text,
+  PRIMARY KEY (`id`),
+  KEY `idx_module` (`module_id`),
+  KEY `idx_module_order` (`module_id`,`order`)
+) ENGINE=InnoDB AUTO_INCREMENT=22 DEFAULT CHARSET=utf8;
 
+--
+-- Vyprázdnit tabulku před vkládáním `mul_roksprocket_items`
+--
+
+TRUNCATE TABLE `mul_roksprocket_items`;
 --
 -- Vypisuji data pro tabulku `mul_roksprocket_items`
 --
@@ -3156,11 +3887,17 @@ INSERT INTO `mul_roksprocket_items` (`id`, `module_id`, `provider`, `provider_id
 -- Struktura tabulky `mul_schemas`
 --
 
-CREATE TABLE `mul_schemas` (
+CREATE TABLE IF NOT EXISTS `mul_schemas` (
   `extension_id` int(11) NOT NULL,
-  `version_id` varchar(20) COLLATE utf8mb4_unicode_ci NOT NULL
+  `version_id` varchar(20) COLLATE utf8mb4_unicode_ci NOT NULL,
+  PRIMARY KEY (`extension_id`,`version_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+--
+-- Vyprázdnit tabulku před vkládáním `mul_schemas`
+--
+
+TRUNCATE TABLE `mul_schemas`;
 --
 -- Vypisuji data pro tabulku `mul_schemas`
 --
@@ -3175,16 +3912,24 @@ INSERT INTO `mul_schemas` (`extension_id`, `version_id`) VALUES
 -- Struktura tabulky `mul_session`
 --
 
-CREATE TABLE `mul_session` (
+CREATE TABLE IF NOT EXISTS `mul_session` (
   `session_id` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
   `client_id` tinyint(3) UNSIGNED DEFAULT NULL,
   `guest` tinyint(4) UNSIGNED DEFAULT '1',
   `time` varchar(14) COLLATE utf8mb4_unicode_ci DEFAULT '',
   `data` longtext COLLATE utf8mb4_unicode_ci,
   `userid` int(11) DEFAULT '0',
-  `username` varchar(150) COLLATE utf8mb4_unicode_ci DEFAULT ''
+  `username` varchar(150) COLLATE utf8mb4_unicode_ci DEFAULT '',
+  PRIMARY KEY (`session_id`),
+  KEY `userid` (`userid`),
+  KEY `time` (`time`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+--
+-- Vyprázdnit tabulku před vkládáním `mul_session`
+--
+
+TRUNCATE TABLE `mul_session`;
 --
 -- Vypisuji data pro tabulku `mul_session`
 --
@@ -3199,8 +3944,8 @@ INSERT INTO `mul_session` (`session_id`, `client_id`, `guest`, `time`, `data`, `
 -- Struktura tabulky `mul_spmedia`
 --
 
-CREATE TABLE `mul_spmedia` (
-  `id` bigint(20) UNSIGNED NOT NULL,
+CREATE TABLE IF NOT EXISTS `mul_spmedia` (
+  `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT,
   `title` varchar(255) NOT NULL,
   `path` varchar(255) NOT NULL,
   `thumb` varchar(255) NOT NULL,
@@ -3212,17 +3957,23 @@ CREATE TABLE `mul_spmedia` (
   `created_on` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
   `created_by` bigint(20) NOT NULL DEFAULT '0',
   `modified_on` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
-  `modified_by` bigint(20) NOT NULL DEFAULT '0'
+  `modified_by` bigint(20) NOT NULL DEFAULT '0',
+  PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
+--
+-- Vyprázdnit tabulku před vkládáním `mul_spmedia`
+--
+
+TRUNCATE TABLE `mul_spmedia`;
 -- --------------------------------------------------------
 
 --
 -- Struktura tabulky `mul_sppagebuilder`
 --
 
-CREATE TABLE `mul_sppagebuilder` (
-  `id` bigint(20) UNSIGNED NOT NULL,
+CREATE TABLE IF NOT EXISTS `mul_sppagebuilder` (
+  `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT,
   `title` varchar(255) NOT NULL,
   `text` mediumtext NOT NULL,
   `extension` varchar(255) NOT NULL DEFAULT 'com_sppagebuilder',
@@ -3244,9 +3995,15 @@ CREATE TABLE `mul_sppagebuilder` (
   `og_description` varchar(255) NOT NULL,
   `language` char(7) NOT NULL,
   `hits` bigint(20) NOT NULL DEFAULT '0',
-  `css` longtext NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+  `css` longtext NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=15 DEFAULT CHARSET=utf8;
 
+--
+-- Vyprázdnit tabulku před vkládáním `mul_sppagebuilder`
+--
+
+TRUNCATE TABLE `mul_sppagebuilder`;
 --
 -- Vypisuji data pro tabulku `mul_sppagebuilder`
 --
@@ -3269,23 +4026,29 @@ INSERT INTO `mul_sppagebuilder` (`id`, `title`, `text`, `extension`, `extension_
 -- Struktura tabulky `mul_sppagebuilder_integrations`
 --
 
-CREATE TABLE `mul_sppagebuilder_integrations` (
-  `id` bigint(20) UNSIGNED NOT NULL,
+CREATE TABLE IF NOT EXISTS `mul_sppagebuilder_integrations` (
+  `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT,
   `title` varchar(255) NOT NULL,
   `description` mediumtext NOT NULL,
   `component` varchar(255) NOT NULL,
   `plugin` mediumtext NOT NULL,
-  `state` tinyint(1) NOT NULL DEFAULT '0'
+  `state` tinyint(1) NOT NULL DEFAULT '0',
+  PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
+--
+-- Vyprázdnit tabulku před vkládáním `mul_sppagebuilder_integrations`
+--
+
+TRUNCATE TABLE `mul_sppagebuilder_integrations`;
 -- --------------------------------------------------------
 
 --
 -- Struktura tabulky `mul_spsimpleportfolio_items`
 --
 
-CREATE TABLE `mul_spsimpleportfolio_items` (
-  `spsimpleportfolio_item_id` bigint(20) UNSIGNED NOT NULL,
+CREATE TABLE IF NOT EXISTS `mul_spsimpleportfolio_items` (
+  `spsimpleportfolio_item_id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT,
   `title` varchar(255) NOT NULL,
   `alias` varchar(55) NOT NULL,
   `image` text NOT NULL,
@@ -3301,9 +4064,15 @@ CREATE TABLE `mul_spsimpleportfolio_items` (
   `modified_by` bigint(20) NOT NULL DEFAULT '0',
   `modified_on` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
   `locked_by` bigint(20) NOT NULL DEFAULT '0',
-  `locked_on` datetime NOT NULL DEFAULT '0000-00-00 00:00:00'
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+  `locked_on` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
+  PRIMARY KEY (`spsimpleportfolio_item_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=19 DEFAULT CHARSET=utf8;
 
+--
+-- Vyprázdnit tabulku před vkládáním `mul_spsimpleportfolio_items`
+--
+
+TRUNCATE TABLE `mul_spsimpleportfolio_items`;
 --
 -- Vypisuji data pro tabulku `mul_spsimpleportfolio_items`
 --
@@ -3334,12 +4103,18 @@ INSERT INTO `mul_spsimpleportfolio_items` (`spsimpleportfolio_item_id`, `title`,
 -- Struktura tabulky `mul_spsimpleportfolio_tags`
 --
 
-CREATE TABLE `mul_spsimpleportfolio_tags` (
-  `spsimpleportfolio_tag_id` bigint(20) UNSIGNED NOT NULL,
+CREATE TABLE IF NOT EXISTS `mul_spsimpleportfolio_tags` (
+  `spsimpleportfolio_tag_id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT,
   `title` varchar(255) NOT NULL,
-  `alias` varchar(55) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+  `alias` varchar(55) NOT NULL,
+  PRIMARY KEY (`spsimpleportfolio_tag_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8;
 
+--
+-- Vyprázdnit tabulku před vkládáním `mul_spsimpleportfolio_tags`
+--
+
+TRUNCATE TABLE `mul_spsimpleportfolio_tags`;
 --
 -- Vypisuji data pro tabulku `mul_spsimpleportfolio_tags`
 --
@@ -3357,8 +4132,8 @@ INSERT INTO `mul_spsimpleportfolio_tags` (`spsimpleportfolio_tag_id`, `title`, `
 -- Struktura tabulky `mul_tags`
 --
 
-CREATE TABLE `mul_tags` (
-  `id` int(10) UNSIGNED NOT NULL,
+CREATE TABLE IF NOT EXISTS `mul_tags` (
+  `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT,
   `parent_id` int(10) UNSIGNED NOT NULL DEFAULT '0',
   `lft` int(11) NOT NULL DEFAULT '0',
   `rgt` int(11) NOT NULL DEFAULT '0',
@@ -3387,9 +4162,22 @@ CREATE TABLE `mul_tags` (
   `language` char(7) COLLATE utf8mb4_unicode_ci NOT NULL,
   `version` int(10) UNSIGNED NOT NULL DEFAULT '1',
   `publish_up` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
-  `publish_down` datetime NOT NULL DEFAULT '0000-00-00 00:00:00'
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+  `publish_down` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
+  PRIMARY KEY (`id`),
+  KEY `tag_idx` (`published`,`access`),
+  KEY `idx_access` (`access`),
+  KEY `idx_checkout` (`checked_out`),
+  KEY `idx_left_right` (`lft`,`rgt`),
+  KEY `idx_language` (`language`),
+  KEY `idx_path` (`path`(100)),
+  KEY `idx_alias` (`alias`(100))
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+--
+-- Vyprázdnit tabulku před vkládáním `mul_tags`
+--
+
+TRUNCATE TABLE `mul_tags`;
 --
 -- Vypisuji data pro tabulku `mul_tags`
 --
@@ -3403,15 +4191,23 @@ INSERT INTO `mul_tags` (`id`, `parent_id`, `lft`, `rgt`, `level`, `path`, `title
 -- Struktura tabulky `mul_template_styles`
 --
 
-CREATE TABLE `mul_template_styles` (
-  `id` int(10) UNSIGNED NOT NULL,
+CREATE TABLE IF NOT EXISTS `mul_template_styles` (
+  `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT,
   `template` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
   `client_id` tinyint(1) UNSIGNED NOT NULL DEFAULT '0',
   `home` char(7) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '0',
   `title` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
-  `params` mediumtext COLLATE utf8mb4_unicode_ci NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+  `params` mediumtext COLLATE utf8mb4_unicode_ci NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `idx_template` (`template`),
+  KEY `idx_home` (`home`)
+) ENGINE=InnoDB AUTO_INCREMENT=13 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+--
+-- Vyprázdnit tabulku před vkládáním `mul_template_styles`
+--
+
+TRUNCATE TABLE `mul_template_styles`;
 --
 -- Vypisuji data pro tabulku `mul_template_styles`
 --
@@ -3430,21 +4226,30 @@ INSERT INTO `mul_template_styles` (`id`, `template`, `client_id`, `home`, `title
 -- Struktura tabulky `mul_ucm_base`
 --
 
-CREATE TABLE `mul_ucm_base` (
+CREATE TABLE IF NOT EXISTS `mul_ucm_base` (
   `ucm_id` int(10) UNSIGNED NOT NULL,
   `ucm_item_id` int(10) NOT NULL,
   `ucm_type_id` int(11) NOT NULL,
-  `ucm_language_id` int(11) NOT NULL
+  `ucm_language_id` int(11) NOT NULL,
+  PRIMARY KEY (`ucm_id`),
+  KEY `idx_ucm_item_id` (`ucm_item_id`),
+  KEY `idx_ucm_type_id` (`ucm_type_id`),
+  KEY `idx_ucm_language_id` (`ucm_language_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+--
+-- Vyprázdnit tabulku před vkládáním `mul_ucm_base`
+--
+
+TRUNCATE TABLE `mul_ucm_base`;
 -- --------------------------------------------------------
 
 --
 -- Struktura tabulky `mul_ucm_content`
 --
 
-CREATE TABLE `mul_ucm_content` (
-  `core_content_id` int(10) UNSIGNED NOT NULL,
+CREATE TABLE IF NOT EXISTS `mul_ucm_content` (
+  `core_content_id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT,
   `core_type_alias` varchar(400) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '' COMMENT 'FK to the content types table',
   `core_title` varchar(400) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
   `core_alias` varchar(400) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL DEFAULT '',
@@ -3475,17 +4280,35 @@ CREATE TABLE `mul_ucm_content` (
   `core_metadesc` text COLLATE utf8mb4_unicode_ci NOT NULL,
   `core_catid` int(10) UNSIGNED NOT NULL DEFAULT '0',
   `core_xreference` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '' COMMENT 'A reference to enable linkages to external data sets.',
-  `core_type_id` int(10) UNSIGNED NOT NULL DEFAULT '0'
+  `core_type_id` int(10) UNSIGNED NOT NULL DEFAULT '0',
+  PRIMARY KEY (`core_content_id`),
+  KEY `tag_idx` (`core_state`,`core_access`),
+  KEY `idx_access` (`core_access`),
+  KEY `idx_language` (`core_language`),
+  KEY `idx_modified_time` (`core_modified_time`),
+  KEY `idx_created_time` (`core_created_time`),
+  KEY `idx_core_modified_user_id` (`core_modified_user_id`),
+  KEY `idx_core_checked_out_user_id` (`core_checked_out_user_id`),
+  KEY `idx_core_created_user_id` (`core_created_user_id`),
+  KEY `idx_core_type_id` (`core_type_id`),
+  KEY `idx_alias` (`core_alias`(100)),
+  KEY `idx_title` (`core_title`(100)),
+  KEY `idx_content_type` (`core_type_alias`(100))
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Contains core content data in name spaced fields';
 
+--
+-- Vyprázdnit tabulku před vkládáním `mul_ucm_content`
+--
+
+TRUNCATE TABLE `mul_ucm_content`;
 -- --------------------------------------------------------
 
 --
 -- Struktura tabulky `mul_ucm_history`
 --
 
-CREATE TABLE `mul_ucm_history` (
-  `version_id` int(10) UNSIGNED NOT NULL,
+CREATE TABLE IF NOT EXISTS `mul_ucm_history` (
+  `version_id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT,
   `ucm_item_id` int(10) UNSIGNED NOT NULL,
   `ucm_type_id` int(10) UNSIGNED NOT NULL,
   `version_note` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '' COMMENT 'Optional version name',
@@ -3494,9 +4317,17 @@ CREATE TABLE `mul_ucm_history` (
   `character_count` int(10) UNSIGNED NOT NULL DEFAULT '0' COMMENT 'Number of characters in this version.',
   `sha1_hash` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '' COMMENT 'SHA1 hash of the version_data column.',
   `version_data` longtext COLLATE utf8mb4_unicode_ci NOT NULL COMMENT 'json-encoded string of version data',
-  `keep_forever` tinyint(4) NOT NULL DEFAULT '0' COMMENT '0=auto delete; 1=keep'
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+  `keep_forever` tinyint(4) NOT NULL DEFAULT '0' COMMENT '0=auto delete; 1=keep',
+  PRIMARY KEY (`version_id`),
+  KEY `idx_ucm_item_id` (`ucm_type_id`,`ucm_item_id`),
+  KEY `idx_save_date` (`save_date`)
+) ENGINE=InnoDB AUTO_INCREMENT=333 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+--
+-- Vyprázdnit tabulku před vkládáním `mul_ucm_history`
+--
+
+TRUNCATE TABLE `mul_ucm_history`;
 --
 -- Vypisuji data pro tabulku `mul_ucm_history`
 --
@@ -3694,8 +4525,8 @@ INSERT INTO `mul_ucm_history` (`version_id`, `ucm_item_id`, `ucm_type_id`, `vers
 -- Struktura tabulky `mul_updates`
 --
 
-CREATE TABLE `mul_updates` (
-  `update_id` int(11) NOT NULL,
+CREATE TABLE IF NOT EXISTS `mul_updates` (
+  `update_id` int(11) NOT NULL AUTO_INCREMENT,
   `update_site_id` int(11) DEFAULT '0',
   `extension_id` int(11) DEFAULT '0',
   `name` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT '',
@@ -3708,9 +4539,15 @@ CREATE TABLE `mul_updates` (
   `data` mediumtext COLLATE utf8mb4_unicode_ci NOT NULL,
   `detailsurl` mediumtext COLLATE utf8mb4_unicode_ci NOT NULL,
   `infourl` mediumtext COLLATE utf8mb4_unicode_ci NOT NULL,
-  `extra_query` varchar(1000) COLLATE utf8mb4_unicode_ci DEFAULT ''
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Available Updates';
+  `extra_query` varchar(1000) COLLATE utf8mb4_unicode_ci DEFAULT '',
+  PRIMARY KEY (`update_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=92 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Available Updates';
 
+--
+-- Vyprázdnit tabulku před vkládáním `mul_updates`
+--
+
+TRUNCATE TABLE `mul_updates`;
 --
 -- Vypisuji data pro tabulku `mul_updates`
 --
@@ -3814,16 +4651,22 @@ INSERT INTO `mul_updates` (`update_id`, `update_site_id`, `extension_id`, `name`
 -- Struktura tabulky `mul_update_sites`
 --
 
-CREATE TABLE `mul_update_sites` (
-  `update_site_id` int(11) NOT NULL,
+CREATE TABLE IF NOT EXISTS `mul_update_sites` (
+  `update_site_id` int(11) NOT NULL AUTO_INCREMENT,
   `name` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT '',
   `type` varchar(20) COLLATE utf8mb4_unicode_ci DEFAULT '',
   `location` mediumtext COLLATE utf8mb4_unicode_ci NOT NULL,
   `enabled` int(11) DEFAULT '0',
   `last_check_timestamp` bigint(20) DEFAULT '0',
-  `extra_query` varchar(1000) COLLATE utf8mb4_unicode_ci DEFAULT ''
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Update Sites';
+  `extra_query` varchar(1000) COLLATE utf8mb4_unicode_ci DEFAULT '',
+  PRIMARY KEY (`update_site_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=33 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Update Sites';
 
+--
+-- Vyprázdnit tabulku před vkládáním `mul_update_sites`
+--
+
+TRUNCATE TABLE `mul_update_sites`;
 --
 -- Vypisuji data pro tabulku `mul_update_sites`
 --
@@ -3849,11 +4692,17 @@ INSERT INTO `mul_update_sites` (`update_site_id`, `name`, `type`, `location`, `e
 -- Struktura tabulky `mul_update_sites_extensions`
 --
 
-CREATE TABLE `mul_update_sites_extensions` (
+CREATE TABLE IF NOT EXISTS `mul_update_sites_extensions` (
   `update_site_id` int(11) NOT NULL DEFAULT '0',
-  `extension_id` int(11) NOT NULL DEFAULT '0'
+  `extension_id` int(11) NOT NULL DEFAULT '0',
+  PRIMARY KEY (`update_site_id`,`extension_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Links extensions to update sites';
 
+--
+-- Vyprázdnit tabulku před vkládáním `mul_update_sites_extensions`
+--
+
+TRUNCATE TABLE `mul_update_sites_extensions`;
 --
 -- Vypisuji data pro tabulku `mul_update_sites_extensions`
 --
@@ -3889,14 +4738,24 @@ INSERT INTO `mul_update_sites_extensions` (`update_site_id`, `extension_id`) VAL
 -- Struktura tabulky `mul_usergroups`
 --
 
-CREATE TABLE `mul_usergroups` (
-  `id` int(10) UNSIGNED NOT NULL COMMENT 'Primary Key',
+CREATE TABLE IF NOT EXISTS `mul_usergroups` (
+  `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'Primary Key',
   `parent_id` int(10) UNSIGNED NOT NULL DEFAULT '0' COMMENT 'Adjacency List Reference Id',
   `lft` int(11) NOT NULL DEFAULT '0' COMMENT 'Nested set lft.',
   `rgt` int(11) NOT NULL DEFAULT '0' COMMENT 'Nested set rgt.',
-  `title` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT ''
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+  `title` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `idx_usergroup_parent_title_lookup` (`parent_id`,`title`),
+  KEY `idx_usergroup_title_lookup` (`title`),
+  KEY `idx_usergroup_adjacency_lookup` (`parent_id`),
+  KEY `idx_usergroup_nested_set_lookup` (`lft`,`rgt`)
+) ENGINE=InnoDB AUTO_INCREMENT=10 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+--
+-- Vyprázdnit tabulku před vkládáním `mul_usergroups`
+--
+
+TRUNCATE TABLE `mul_usergroups`;
 --
 -- Vypisuji data pro tabulku `mul_usergroups`
 --
@@ -3918,8 +4777,8 @@ INSERT INTO `mul_usergroups` (`id`, `parent_id`, `lft`, `rgt`, `title`) VALUES
 -- Struktura tabulky `mul_users`
 --
 
-CREATE TABLE `mul_users` (
-  `id` int(11) NOT NULL,
+CREATE TABLE IF NOT EXISTS `mul_users` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
   `name` varchar(400) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
   `username` varchar(150) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
   `email` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
@@ -3934,9 +4793,19 @@ CREATE TABLE `mul_users` (
   `resetCount` int(11) NOT NULL DEFAULT '0' COMMENT 'Count of password resets since lastResetTime',
   `otpKey` varchar(1000) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '' COMMENT 'Two factor authentication encrypted keys',
   `otep` varchar(1000) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '' COMMENT 'One time emergency passwords',
-  `requireReset` tinyint(4) NOT NULL DEFAULT '0' COMMENT 'Require user to reset password on next login'
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+  `requireReset` tinyint(4) NOT NULL DEFAULT '0' COMMENT 'Require user to reset password on next login',
+  PRIMARY KEY (`id`),
+  KEY `idx_block` (`block`),
+  KEY `username` (`username`),
+  KEY `email` (`email`),
+  KEY `idx_name` (`name`(100))
+) ENGINE=InnoDB AUTO_INCREMENT=857 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+--
+-- Vyprázdnit tabulku před vkládáním `mul_users`
+--
+
+TRUNCATE TABLE `mul_users`;
 --
 -- Vypisuji data pro tabulku `mul_users`
 --
@@ -3950,24 +4819,34 @@ INSERT INTO `mul_users` (`id`, `name`, `username`, `email`, `password`, `block`,
 -- Struktura tabulky `mul_user_keys`
 --
 
-CREATE TABLE `mul_user_keys` (
-  `id` int(10) UNSIGNED NOT NULL,
+CREATE TABLE IF NOT EXISTS `mul_user_keys` (
+  `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT,
   `user_id` varchar(150) COLLATE utf8mb4_unicode_ci NOT NULL,
   `token` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
   `series` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL,
   `invalid` tinyint(4) NOT NULL,
   `time` varchar(200) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `uastring` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL
+  `uastring` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `series` (`series`),
+  UNIQUE KEY `series_2` (`series`),
+  UNIQUE KEY `series_3` (`series`),
+  KEY `user_id` (`user_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+--
+-- Vyprázdnit tabulku před vkládáním `mul_user_keys`
+--
+
+TRUNCATE TABLE `mul_user_keys`;
 -- --------------------------------------------------------
 
 --
 -- Struktura tabulky `mul_user_notes`
 --
 
-CREATE TABLE `mul_user_notes` (
-  `id` int(10) UNSIGNED NOT NULL,
+CREATE TABLE IF NOT EXISTS `mul_user_notes` (
+  `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT,
   `user_id` int(10) UNSIGNED NOT NULL DEFAULT '0',
   `catid` int(10) UNSIGNED NOT NULL DEFAULT '0',
   `subject` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
@@ -3981,33 +4860,53 @@ CREATE TABLE `mul_user_notes` (
   `modified_time` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
   `review_time` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
   `publish_up` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
-  `publish_down` datetime NOT NULL DEFAULT '0000-00-00 00:00:00'
+  `publish_down` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
+  PRIMARY KEY (`id`),
+  KEY `idx_user_id` (`user_id`),
+  KEY `idx_category_id` (`catid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+--
+-- Vyprázdnit tabulku před vkládáním `mul_user_notes`
+--
+
+TRUNCATE TABLE `mul_user_notes`;
 -- --------------------------------------------------------
 
 --
 -- Struktura tabulky `mul_user_profiles`
 --
 
-CREATE TABLE `mul_user_profiles` (
+CREATE TABLE IF NOT EXISTS `mul_user_profiles` (
   `user_id` int(11) NOT NULL,
   `profile_key` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
   `profile_value` mediumtext COLLATE utf8mb4_unicode_ci NOT NULL,
-  `ordering` int(11) NOT NULL DEFAULT '0'
+  `ordering` int(11) NOT NULL DEFAULT '0',
+  UNIQUE KEY `idx_user_id_profile_key` (`user_id`,`profile_key`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Simple user profile storage table';
 
+--
+-- Vyprázdnit tabulku před vkládáním `mul_user_profiles`
+--
+
+TRUNCATE TABLE `mul_user_profiles`;
 -- --------------------------------------------------------
 
 --
 -- Struktura tabulky `mul_user_usergroup_map`
 --
 
-CREATE TABLE `mul_user_usergroup_map` (
+CREATE TABLE IF NOT EXISTS `mul_user_usergroup_map` (
   `user_id` int(10) UNSIGNED NOT NULL DEFAULT '0' COMMENT 'Foreign Key to #__users.id',
-  `group_id` int(10) UNSIGNED NOT NULL DEFAULT '0' COMMENT 'Foreign Key to #__usergroups.id'
+  `group_id` int(10) UNSIGNED NOT NULL DEFAULT '0' COMMENT 'Foreign Key to #__usergroups.id',
+  PRIMARY KEY (`user_id`,`group_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+--
+-- Vyprázdnit tabulku před vkládáním `mul_user_usergroup_map`
+--
+
+TRUNCATE TABLE `mul_user_usergroup_map`;
 --
 -- Vypisuji data pro tabulku `mul_user_usergroup_map`
 --
@@ -4021,10 +4920,15 @@ INSERT INTO `mul_user_usergroup_map` (`user_id`, `group_id`) VALUES
 -- Struktura tabulky `mul_utf8_conversion`
 --
 
-CREATE TABLE `mul_utf8_conversion` (
+CREATE TABLE IF NOT EXISTS `mul_utf8_conversion` (
   `converted` tinyint(4) NOT NULL DEFAULT '0'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+--
+-- Vyprázdnit tabulku před vkládáním `mul_utf8_conversion`
+--
+
+TRUNCATE TABLE `mul_utf8_conversion`;
 --
 -- Vypisuji data pro tabulku `mul_utf8_conversion`
 --
@@ -4038,13 +4942,20 @@ INSERT INTO `mul_utf8_conversion` (`converted`) VALUES
 -- Struktura tabulky `mul_viewlevels`
 --
 
-CREATE TABLE `mul_viewlevels` (
-  `id` int(10) UNSIGNED NOT NULL COMMENT 'Primary Key',
+CREATE TABLE IF NOT EXISTS `mul_viewlevels` (
+  `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'Primary Key',
   `title` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
   `ordering` int(11) NOT NULL DEFAULT '0',
-  `rules` varchar(5120) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT 'JSON encoded access control.'
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+  `rules` varchar(5120) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT 'JSON encoded access control.',
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `idx_assetgroup_title_lookup` (`title`)
+) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+--
+-- Vyprázdnit tabulku před vkládáním `mul_viewlevels`
+--
+
+TRUNCATE TABLE `mul_viewlevels`;
 --
 -- Vypisuji data pro tabulku `mul_viewlevels`
 --
@@ -4062,8 +4973,8 @@ INSERT INTO `mul_viewlevels` (`id`, `title`, `ordering`, `rules`) VALUES
 -- Struktura tabulky `mul_wf_profiles`
 --
 
-CREATE TABLE `mul_wf_profiles` (
-  `id` int(11) NOT NULL,
+CREATE TABLE IF NOT EXISTS `mul_wf_profiles` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
   `name` varchar(255) NOT NULL,
   `description` text NOT NULL,
   `users` text NOT NULL,
@@ -4077,9 +4988,15 @@ CREATE TABLE `mul_wf_profiles` (
   `ordering` int(11) NOT NULL,
   `checked_out` tinyint(3) NOT NULL,
   `checked_out_time` datetime NOT NULL,
-  `params` text NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+  `params` text NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8;
 
+--
+-- Vyprázdnit tabulku před vkládáním `mul_wf_profiles`
+--
+
+TRUNCATE TABLE `mul_wf_profiles`;
 --
 -- Vypisuji data pro tabulku `mul_wf_profiles`
 --
@@ -4090,1235 +5007,8 @@ INSERT INTO `mul_wf_profiles` (`id`, `name`, `description`, `users`, `types`, `c
 (3, 'Blogger', 'Simple Blogging Profile', '', '3,4,5,6,8,7', '', 0, 'desktop,tablet,phone', 'bold,italic,strikethrough,lists,blockquote,spacer,justifyleft,justifycenter,justifyright,spacer,link,unlink,imgmanager,article,spellchecker,fullscreen,kitchensink;formatselect,styleselect,underline,justifyfull,clipboard,removeformat,charmap,indent,outdent,undo,redo,help', 'link,imgmanager,article,spellchecker,fullscreen,kitchensink,clipboard,contextmenu,inlinepopups,lists,formatselect,styleselect,textpattern', 0, 3, 0, '0000-00-00 00:00:00', '{"editor":{"toggle":"0"}}'),
 (4, 'Mobile', 'Sample Mobile Profile', '', '3,4,5,6,8,7', '', 0, 'tablet,phone', 'undo,redo,spacer,bold,italic,underline,formatselect,spacer,justifyleft,justifycenter,justifyfull,justifyright,spacer,fullscreen,kitchensink;styleselect,lists,spellchecker,article,link,unlink', 'fullscreen,kitchensink,spellchecker,article,link,inlinepopups,lists,formatselect,styleselect,textpattern', 0, 4, 0, '0000-00-00 00:00:00', '{"editor":{"toolbar_theme":"mobile","resizing":"0","resize_horizontal":"0","resizing_use_cookie":"0","toggle":"0","links":{"popups":{"default":"","jcemediabox":{"enable":"0"},"window":{"enable":"0"}}}}}'),
 (5, 'Markdown', 'Sample Markdown Profile', '', '6,7,3,4,5,8', '', 0, 'desktop,tablet,phone', 'fullscreen,justifyleft,justifycenter,justifyfull,justifyright,link,unlink,imgmanager,styleselect', 'fullscreen,link,imgmanager,styleselect,inlinepopups,media,textpattern', 0, 5, 0, '0000-00-00 00:00:00', '{"editor":{"toolbar_theme":"mobile"}}');
+COMMIT;
 
---
--- Klíče pro exportované tabulky
---
-
---
--- Klíče pro tabulku `mul_akeeba_common`
---
-ALTER TABLE `mul_akeeba_common`
-  ADD PRIMARY KEY (`key`);
-
---
--- Klíče pro tabulku `mul_ak_profiles`
---
-ALTER TABLE `mul_ak_profiles`
-  ADD PRIMARY KEY (`id`);
-
---
--- Klíče pro tabulku `mul_ak_stats`
---
-ALTER TABLE `mul_ak_stats`
-  ADD PRIMARY KEY (`id`),
-  ADD KEY `idx_fullstatus` (`filesexist`,`status`),
-  ADD KEY `idx_stale` (`status`,`origin`);
-
---
--- Klíče pro tabulku `mul_ak_storage`
---
-ALTER TABLE `mul_ak_storage`
-  ADD PRIMARY KEY (`tag`(100));
-
---
--- Klíče pro tabulku `mul_assets`
---
-ALTER TABLE `mul_assets`
-  ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `idx_asset_name` (`name`),
-  ADD KEY `idx_lft_rgt` (`lft`,`rgt`),
-  ADD KEY `idx_parent_id` (`parent_id`);
-
---
--- Klíče pro tabulku `mul_associations`
---
-ALTER TABLE `mul_associations`
-  ADD PRIMARY KEY (`context`,`id`),
-  ADD KEY `idx_key` (`key`);
-
---
--- Klíče pro tabulku `mul_banners`
---
-ALTER TABLE `mul_banners`
-  ADD PRIMARY KEY (`id`),
-  ADD KEY `idx_state` (`state`),
-  ADD KEY `idx_own_prefix` (`own_prefix`),
-  ADD KEY `idx_banner_catid` (`catid`),
-  ADD KEY `idx_language` (`language`),
-  ADD KEY `idx_metakey_prefix` (`metakey_prefix`(100));
-
---
--- Klíče pro tabulku `mul_banner_clients`
---
-ALTER TABLE `mul_banner_clients`
-  ADD PRIMARY KEY (`id`),
-  ADD KEY `idx_own_prefix` (`own_prefix`),
-  ADD KEY `idx_metakey_prefix` (`metakey_prefix`(100));
-
---
--- Klíče pro tabulku `mul_banner_tracks`
---
-ALTER TABLE `mul_banner_tracks`
-  ADD PRIMARY KEY (`track_date`,`track_type`,`banner_id`),
-  ADD KEY `idx_track_date` (`track_date`),
-  ADD KEY `idx_track_type` (`track_type`),
-  ADD KEY `idx_banner_id` (`banner_id`);
-
---
--- Klíče pro tabulku `mul_categories`
---
-ALTER TABLE `mul_categories`
-  ADD PRIMARY KEY (`id`),
-  ADD KEY `cat_idx` (`extension`,`published`,`access`),
-  ADD KEY `idx_access` (`access`),
-  ADD KEY `idx_checkout` (`checked_out`),
-  ADD KEY `idx_left_right` (`lft`,`rgt`),
-  ADD KEY `idx_language` (`language`),
-  ADD KEY `idx_path` (`path`(100)),
-  ADD KEY `idx_alias` (`alias`(100));
-
---
--- Klíče pro tabulku `mul_contact_details`
---
-ALTER TABLE `mul_contact_details`
-  ADD PRIMARY KEY (`id`),
-  ADD KEY `idx_access` (`access`),
-  ADD KEY `idx_checkout` (`checked_out`),
-  ADD KEY `idx_state` (`published`),
-  ADD KEY `idx_catid` (`catid`),
-  ADD KEY `idx_createdby` (`created_by`),
-  ADD KEY `idx_featured_catid` (`featured`,`catid`),
-  ADD KEY `idx_language` (`language`),
-  ADD KEY `idx_xreference` (`xreference`);
-
---
--- Klíče pro tabulku `mul_content`
---
-ALTER TABLE `mul_content`
-  ADD PRIMARY KEY (`id`),
-  ADD KEY `idx_access` (`access`),
-  ADD KEY `idx_checkout` (`checked_out`),
-  ADD KEY `idx_state` (`state`),
-  ADD KEY `idx_catid` (`catid`),
-  ADD KEY `idx_createdby` (`created_by`),
-  ADD KEY `idx_featured_catid` (`featured`,`catid`),
-  ADD KEY `idx_language` (`language`),
-  ADD KEY `idx_xreference` (`xreference`);
-
---
--- Klíče pro tabulku `mul_contentitem_tag_map`
---
-ALTER TABLE `mul_contentitem_tag_map`
-  ADD UNIQUE KEY `uc_ItemnameTagid` (`type_id`,`content_item_id`,`tag_id`),
-  ADD KEY `idx_tag_type` (`tag_id`,`type_id`),
-  ADD KEY `idx_date_id` (`tag_date`,`tag_id`),
-  ADD KEY `idx_core_content_id` (`core_content_id`);
-
---
--- Klíče pro tabulku `mul_content_frontpage`
---
-ALTER TABLE `mul_content_frontpage`
-  ADD PRIMARY KEY (`content_id`);
-
---
--- Klíče pro tabulku `mul_content_rating`
---
-ALTER TABLE `mul_content_rating`
-  ADD PRIMARY KEY (`content_id`);
-
---
--- Klíče pro tabulku `mul_content_types`
---
-ALTER TABLE `mul_content_types`
-  ADD PRIMARY KEY (`type_id`),
-  ADD KEY `idx_alias` (`type_alias`(100));
-
---
--- Klíče pro tabulku `mul_extensions`
---
-ALTER TABLE `mul_extensions`
-  ADD PRIMARY KEY (`extension_id`),
-  ADD KEY `element_clientid` (`element`,`client_id`),
-  ADD KEY `element_folder_clientid` (`element`,`folder`,`client_id`),
-  ADD KEY `extension` (`type`,`element`,`folder`,`client_id`);
-
---
--- Klíče pro tabulku `mul_fields`
---
-ALTER TABLE `mul_fields`
-  ADD PRIMARY KEY (`id`),
-  ADD KEY `idx_checkout` (`checked_out`),
-  ADD KEY `idx_state` (`state`),
-  ADD KEY `idx_created_user_id` (`created_user_id`),
-  ADD KEY `idx_access` (`access`),
-  ADD KEY `idx_context` (`context`(191)),
-  ADD KEY `idx_language` (`language`);
-
---
--- Klíče pro tabulku `mul_fields_categories`
---
-ALTER TABLE `mul_fields_categories`
-  ADD PRIMARY KEY (`field_id`,`category_id`);
-
---
--- Klíče pro tabulku `mul_fields_groups`
---
-ALTER TABLE `mul_fields_groups`
-  ADD PRIMARY KEY (`id`),
-  ADD KEY `idx_checkout` (`checked_out`),
-  ADD KEY `idx_state` (`state`),
-  ADD KEY `idx_created_by` (`created_by`),
-  ADD KEY `idx_access` (`access`),
-  ADD KEY `idx_context` (`context`(191)),
-  ADD KEY `idx_language` (`language`);
-
---
--- Klíče pro tabulku `mul_fields_values`
---
-ALTER TABLE `mul_fields_values`
-  ADD KEY `idx_field_id` (`field_id`),
-  ADD KEY `idx_item_id` (`item_id`(191));
-
---
--- Klíče pro tabulku `mul_finder_filters`
---
-ALTER TABLE `mul_finder_filters`
-  ADD PRIMARY KEY (`filter_id`);
-
---
--- Klíče pro tabulku `mul_finder_links`
---
-ALTER TABLE `mul_finder_links`
-  ADD PRIMARY KEY (`link_id`),
-  ADD KEY `idx_type` (`type_id`),
-  ADD KEY `idx_md5` (`md5sum`),
-  ADD KEY `idx_url` (`url`(75)),
-  ADD KEY `idx_published_list` (`published`,`state`,`access`,`publish_start_date`,`publish_end_date`,`list_price`),
-  ADD KEY `idx_published_sale` (`published`,`state`,`access`,`publish_start_date`,`publish_end_date`,`sale_price`),
-  ADD KEY `idx_title` (`title`(100));
-
---
--- Klíče pro tabulku `mul_finder_links_terms0`
---
-ALTER TABLE `mul_finder_links_terms0`
-  ADD PRIMARY KEY (`link_id`,`term_id`),
-  ADD KEY `idx_term_weight` (`term_id`,`weight`),
-  ADD KEY `idx_link_term_weight` (`link_id`,`term_id`,`weight`);
-
---
--- Klíče pro tabulku `mul_finder_links_terms1`
---
-ALTER TABLE `mul_finder_links_terms1`
-  ADD PRIMARY KEY (`link_id`,`term_id`),
-  ADD KEY `idx_term_weight` (`term_id`,`weight`),
-  ADD KEY `idx_link_term_weight` (`link_id`,`term_id`,`weight`);
-
---
--- Klíče pro tabulku `mul_finder_links_terms2`
---
-ALTER TABLE `mul_finder_links_terms2`
-  ADD PRIMARY KEY (`link_id`,`term_id`),
-  ADD KEY `idx_term_weight` (`term_id`,`weight`),
-  ADD KEY `idx_link_term_weight` (`link_id`,`term_id`,`weight`);
-
---
--- Klíče pro tabulku `mul_finder_links_terms3`
---
-ALTER TABLE `mul_finder_links_terms3`
-  ADD PRIMARY KEY (`link_id`,`term_id`),
-  ADD KEY `idx_term_weight` (`term_id`,`weight`),
-  ADD KEY `idx_link_term_weight` (`link_id`,`term_id`,`weight`);
-
---
--- Klíče pro tabulku `mul_finder_links_terms4`
---
-ALTER TABLE `mul_finder_links_terms4`
-  ADD PRIMARY KEY (`link_id`,`term_id`),
-  ADD KEY `idx_term_weight` (`term_id`,`weight`),
-  ADD KEY `idx_link_term_weight` (`link_id`,`term_id`,`weight`);
-
---
--- Klíče pro tabulku `mul_finder_links_terms5`
---
-ALTER TABLE `mul_finder_links_terms5`
-  ADD PRIMARY KEY (`link_id`,`term_id`),
-  ADD KEY `idx_term_weight` (`term_id`,`weight`),
-  ADD KEY `idx_link_term_weight` (`link_id`,`term_id`,`weight`);
-
---
--- Klíče pro tabulku `mul_finder_links_terms6`
---
-ALTER TABLE `mul_finder_links_terms6`
-  ADD PRIMARY KEY (`link_id`,`term_id`),
-  ADD KEY `idx_term_weight` (`term_id`,`weight`),
-  ADD KEY `idx_link_term_weight` (`link_id`,`term_id`,`weight`);
-
---
--- Klíče pro tabulku `mul_finder_links_terms7`
---
-ALTER TABLE `mul_finder_links_terms7`
-  ADD PRIMARY KEY (`link_id`,`term_id`),
-  ADD KEY `idx_term_weight` (`term_id`,`weight`),
-  ADD KEY `idx_link_term_weight` (`link_id`,`term_id`,`weight`);
-
---
--- Klíče pro tabulku `mul_finder_links_terms8`
---
-ALTER TABLE `mul_finder_links_terms8`
-  ADD PRIMARY KEY (`link_id`,`term_id`),
-  ADD KEY `idx_term_weight` (`term_id`,`weight`),
-  ADD KEY `idx_link_term_weight` (`link_id`,`term_id`,`weight`);
-
---
--- Klíče pro tabulku `mul_finder_links_terms9`
---
-ALTER TABLE `mul_finder_links_terms9`
-  ADD PRIMARY KEY (`link_id`,`term_id`),
-  ADD KEY `idx_term_weight` (`term_id`,`weight`),
-  ADD KEY `idx_link_term_weight` (`link_id`,`term_id`,`weight`);
-
---
--- Klíče pro tabulku `mul_finder_links_termsa`
---
-ALTER TABLE `mul_finder_links_termsa`
-  ADD PRIMARY KEY (`link_id`,`term_id`),
-  ADD KEY `idx_term_weight` (`term_id`,`weight`),
-  ADD KEY `idx_link_term_weight` (`link_id`,`term_id`,`weight`);
-
---
--- Klíče pro tabulku `mul_finder_links_termsb`
---
-ALTER TABLE `mul_finder_links_termsb`
-  ADD PRIMARY KEY (`link_id`,`term_id`),
-  ADD KEY `idx_term_weight` (`term_id`,`weight`),
-  ADD KEY `idx_link_term_weight` (`link_id`,`term_id`,`weight`);
-
---
--- Klíče pro tabulku `mul_finder_links_termsc`
---
-ALTER TABLE `mul_finder_links_termsc`
-  ADD PRIMARY KEY (`link_id`,`term_id`),
-  ADD KEY `idx_term_weight` (`term_id`,`weight`),
-  ADD KEY `idx_link_term_weight` (`link_id`,`term_id`,`weight`);
-
---
--- Klíče pro tabulku `mul_finder_links_termsd`
---
-ALTER TABLE `mul_finder_links_termsd`
-  ADD PRIMARY KEY (`link_id`,`term_id`),
-  ADD KEY `idx_term_weight` (`term_id`,`weight`),
-  ADD KEY `idx_link_term_weight` (`link_id`,`term_id`,`weight`);
-
---
--- Klíče pro tabulku `mul_finder_links_termse`
---
-ALTER TABLE `mul_finder_links_termse`
-  ADD PRIMARY KEY (`link_id`,`term_id`),
-  ADD KEY `idx_term_weight` (`term_id`,`weight`),
-  ADD KEY `idx_link_term_weight` (`link_id`,`term_id`,`weight`);
-
---
--- Klíče pro tabulku `mul_finder_links_termsf`
---
-ALTER TABLE `mul_finder_links_termsf`
-  ADD PRIMARY KEY (`link_id`,`term_id`),
-  ADD KEY `idx_term_weight` (`term_id`,`weight`),
-  ADD KEY `idx_link_term_weight` (`link_id`,`term_id`,`weight`);
-
---
--- Klíče pro tabulku `mul_finder_taxonomy`
---
-ALTER TABLE `mul_finder_taxonomy`
-  ADD PRIMARY KEY (`id`),
-  ADD KEY `parent_id` (`parent_id`),
-  ADD KEY `state` (`state`),
-  ADD KEY `ordering` (`ordering`),
-  ADD KEY `access` (`access`),
-  ADD KEY `idx_parent_published` (`parent_id`,`state`,`access`);
-
---
--- Klíče pro tabulku `mul_finder_taxonomy_map`
---
-ALTER TABLE `mul_finder_taxonomy_map`
-  ADD PRIMARY KEY (`link_id`,`node_id`),
-  ADD KEY `link_id` (`link_id`),
-  ADD KEY `node_id` (`node_id`);
-
---
--- Klíče pro tabulku `mul_finder_terms`
---
-ALTER TABLE `mul_finder_terms`
-  ADD PRIMARY KEY (`term_id`),
-  ADD UNIQUE KEY `idx_term` (`term`),
-  ADD KEY `idx_term_phrase` (`term`,`phrase`),
-  ADD KEY `idx_stem_phrase` (`stem`,`phrase`),
-  ADD KEY `idx_soundex_phrase` (`soundex`,`phrase`);
-
---
--- Klíče pro tabulku `mul_finder_terms_common`
---
-ALTER TABLE `mul_finder_terms_common`
-  ADD KEY `idx_word_lang` (`term`,`language`),
-  ADD KEY `idx_lang` (`language`);
-
---
--- Klíče pro tabulku `mul_finder_tokens`
---
-ALTER TABLE `mul_finder_tokens`
-  ADD KEY `idx_word` (`term`),
-  ADD KEY `idx_context` (`context`);
-
---
--- Klíče pro tabulku `mul_finder_tokens_aggregate`
---
-ALTER TABLE `mul_finder_tokens_aggregate`
-  ADD KEY `token` (`term`),
-  ADD KEY `keyword_id` (`term_id`);
-
---
--- Klíče pro tabulku `mul_finder_types`
---
-ALTER TABLE `mul_finder_types`
-  ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `title` (`title`);
-
---
--- Klíče pro tabulku `mul_kunena_aliases`
---
-ALTER TABLE `mul_kunena_aliases`
-  ADD UNIQUE KEY `alias` (`alias`),
-  ADD KEY `state` (`state`),
-  ADD KEY `item` (`item`),
-  ADD KEY `type` (`type`);
-
---
--- Klíče pro tabulku `mul_kunena_announcement`
---
-ALTER TABLE `mul_kunena_announcement`
-  ADD PRIMARY KEY (`id`);
-
---
--- Klíče pro tabulku `mul_kunena_attachments`
---
-ALTER TABLE `mul_kunena_attachments`
-  ADD PRIMARY KEY (`id`),
-  ADD KEY `mesid` (`mesid`),
-  ADD KEY `userid` (`userid`),
-  ADD KEY `hash` (`hash`),
-  ADD KEY `filename` (`filename`),
-  ADD KEY `filename_real` (`filename_real`);
-
---
--- Klíče pro tabulku `mul_kunena_categories`
---
-ALTER TABLE `mul_kunena_categories`
-  ADD PRIMARY KEY (`id`),
-  ADD KEY `parent_id` (`parent_id`),
-  ADD KEY `category_access` (`accesstype`,`access`),
-  ADD KEY `published_pubaccess_id` (`published`,`pub_access`,`id`);
-
---
--- Klíče pro tabulku `mul_kunena_configuration`
---
-ALTER TABLE `mul_kunena_configuration`
-  ADD PRIMARY KEY (`id`);
-
---
--- Klíče pro tabulku `mul_kunena_keywords`
---
-ALTER TABLE `mul_kunena_keywords`
-  ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `name` (`name`),
-  ADD KEY `public_count` (`public_count`),
-  ADD KEY `total_count` (`total_count`);
-
---
--- Klíče pro tabulku `mul_kunena_keywords_map`
---
-ALTER TABLE `mul_kunena_keywords_map`
-  ADD UNIQUE KEY `keyword_user_topic` (`keyword_id`,`user_id`,`topic_id`),
-  ADD KEY `user_id` (`user_id`),
-  ADD KEY `topic_user` (`topic_id`,`user_id`);
-
---
--- Klíče pro tabulku `mul_kunena_messages`
---
-ALTER TABLE `mul_kunena_messages`
-  ADD PRIMARY KEY (`id`),
-  ADD KEY `thread` (`thread`),
-  ADD KEY `ip` (`ip`),
-  ADD KEY `userid` (`userid`),
-  ADD KEY `time` (`time`),
-  ADD KEY `locked` (`locked`),
-  ADD KEY `hold_time` (`hold`,`time`),
-  ADD KEY `parent_hits` (`parent`,`hits`),
-  ADD KEY `catid_parent` (`catid`,`parent`);
-
---
--- Klíče pro tabulku `mul_kunena_messages_text`
---
-ALTER TABLE `mul_kunena_messages_text`
-  ADD PRIMARY KEY (`mesid`);
-
---
--- Klíče pro tabulku `mul_kunena_polls`
---
-ALTER TABLE `mul_kunena_polls`
-  ADD PRIMARY KEY (`id`),
-  ADD KEY `threadid` (`threadid`);
-
---
--- Klíče pro tabulku `mul_kunena_polls_options`
---
-ALTER TABLE `mul_kunena_polls_options`
-  ADD PRIMARY KEY (`id`),
-  ADD KEY `pollid` (`pollid`);
-
---
--- Klíče pro tabulku `mul_kunena_polls_users`
---
-ALTER TABLE `mul_kunena_polls_users`
-  ADD UNIQUE KEY `pollid` (`pollid`,`userid`);
-
---
--- Klíče pro tabulku `mul_kunena_ranks`
---
-ALTER TABLE `mul_kunena_ranks`
-  ADD PRIMARY KEY (`rank_id`);
-
---
--- Klíče pro tabulku `mul_kunena_sessions`
---
-ALTER TABLE `mul_kunena_sessions`
-  ADD PRIMARY KEY (`userid`),
-  ADD KEY `currvisit` (`currvisit`);
-
---
--- Klíče pro tabulku `mul_kunena_smileys`
---
-ALTER TABLE `mul_kunena_smileys`
-  ADD PRIMARY KEY (`id`);
-
---
--- Klíče pro tabulku `mul_kunena_thankyou`
---
-ALTER TABLE `mul_kunena_thankyou`
-  ADD UNIQUE KEY `postid` (`postid`,`userid`),
-  ADD KEY `userid` (`userid`),
-  ADD KEY `targetuserid` (`targetuserid`);
-
---
--- Klíče pro tabulku `mul_kunena_topics`
---
-ALTER TABLE `mul_kunena_topics`
-  ADD PRIMARY KEY (`id`),
-  ADD KEY `category_id` (`category_id`),
-  ADD KEY `locked` (`locked`),
-  ADD KEY `hold` (`hold`),
-  ADD KEY `posts` (`posts`),
-  ADD KEY `hits` (`hits`),
-  ADD KEY `first_post_userid` (`first_post_userid`),
-  ADD KEY `last_post_userid` (`last_post_userid`),
-  ADD KEY `first_post_time` (`first_post_time`),
-  ADD KEY `last_post_time` (`last_post_time`),
-  ADD KEY `last_post_id` (`last_post_id`);
-
---
--- Klíče pro tabulku `mul_kunena_users`
---
-ALTER TABLE `mul_kunena_users`
-  ADD PRIMARY KEY (`userid`),
-  ADD KEY `group_id` (`group_id`),
-  ADD KEY `posts` (`posts`),
-  ADD KEY `uhits` (`uhits`),
-  ADD KEY `banned` (`banned`),
-  ADD KEY `moderator` (`moderator`);
-
---
--- Klíče pro tabulku `mul_kunena_users_banned`
---
-ALTER TABLE `mul_kunena_users_banned`
-  ADD PRIMARY KEY (`id`),
-  ADD KEY `userid` (`userid`),
-  ADD KEY `ip` (`ip`),
-  ADD KEY `expiration` (`expiration`),
-  ADD KEY `created_time` (`created_time`);
-
---
--- Klíče pro tabulku `mul_kunena_user_categories`
---
-ALTER TABLE `mul_kunena_user_categories`
-  ADD PRIMARY KEY (`user_id`,`category_id`),
-  ADD KEY `category_subscribed` (`category_id`,`subscribed`),
-  ADD KEY `role` (`role`);
-
---
--- Klíče pro tabulku `mul_kunena_user_read`
---
-ALTER TABLE `mul_kunena_user_read`
-  ADD UNIQUE KEY `user_topic_id` (`user_id`,`topic_id`),
-  ADD KEY `category_user_id` (`category_id`,`user_id`),
-  ADD KEY `time` (`time`);
-
---
--- Klíče pro tabulku `mul_kunena_user_topics`
---
-ALTER TABLE `mul_kunena_user_topics`
-  ADD UNIQUE KEY `user_topic_id` (`user_id`,`topic_id`),
-  ADD KEY `topic_id` (`topic_id`),
-  ADD KEY `posts` (`posts`),
-  ADD KEY `owner` (`owner`),
-  ADD KEY `favorite` (`favorite`),
-  ADD KEY `subscribed` (`subscribed`);
-
---
--- Klíče pro tabulku `mul_kunena_version`
---
-ALTER TABLE `mul_kunena_version`
-  ADD PRIMARY KEY (`id`);
-
---
--- Klíče pro tabulku `mul_languages`
---
-ALTER TABLE `mul_languages`
-  ADD PRIMARY KEY (`lang_id`),
-  ADD UNIQUE KEY `idx_sef` (`sef`),
-  ADD UNIQUE KEY `idx_langcode` (`lang_code`),
-  ADD KEY `idx_access` (`access`),
-  ADD KEY `idx_ordering` (`ordering`);
-
---
--- Klíče pro tabulku `mul_menu`
---
-ALTER TABLE `mul_menu`
-  ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `idx_client_id_parent_id_alias_language` (`client_id`,`parent_id`,`alias`(100),`language`),
-  ADD KEY `idx_componentid` (`component_id`,`menutype`,`published`,`access`),
-  ADD KEY `idx_menutype` (`menutype`),
-  ADD KEY `idx_left_right` (`lft`,`rgt`),
-  ADD KEY `idx_language` (`language`),
-  ADD KEY `idx_alias` (`alias`(100)),
-  ADD KEY `idx_path` (`path`(100));
-
---
--- Klíče pro tabulku `mul_menu_types`
---
-ALTER TABLE `mul_menu_types`
-  ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `idx_menutype` (`menutype`);
-
---
--- Klíče pro tabulku `mul_messages`
---
-ALTER TABLE `mul_messages`
-  ADD PRIMARY KEY (`message_id`),
-  ADD KEY `useridto_state` (`user_id_to`,`state`);
-
---
--- Klíče pro tabulku `mul_messages_cfg`
---
-ALTER TABLE `mul_messages_cfg`
-  ADD UNIQUE KEY `idx_user_var_name` (`user_id`,`cfg_name`);
-
---
--- Klíče pro tabulku `mul_modules`
---
-ALTER TABLE `mul_modules`
-  ADD PRIMARY KEY (`id`),
-  ADD KEY `published` (`published`,`access`),
-  ADD KEY `newsfeeds` (`module`,`published`),
-  ADD KEY `idx_language` (`language`);
-
---
--- Klíče pro tabulku `mul_modules_menu`
---
-ALTER TABLE `mul_modules_menu`
-  ADD PRIMARY KEY (`moduleid`,`menuid`);
-
---
--- Klíče pro tabulku `mul_newsfeeds`
---
-ALTER TABLE `mul_newsfeeds`
-  ADD PRIMARY KEY (`id`),
-  ADD KEY `idx_access` (`access`),
-  ADD KEY `idx_checkout` (`checked_out`),
-  ADD KEY `idx_state` (`published`),
-  ADD KEY `idx_catid` (`catid`),
-  ADD KEY `idx_createdby` (`created_by`),
-  ADD KEY `idx_language` (`language`),
-  ADD KEY `idx_xreference` (`xreference`);
-
---
--- Klíče pro tabulku `mul_overrider`
---
-ALTER TABLE `mul_overrider`
-  ADD PRIMARY KEY (`id`);
-
---
--- Klíče pro tabulku `mul_postinstall_messages`
---
-ALTER TABLE `mul_postinstall_messages`
-  ADD PRIMARY KEY (`postinstall_message_id`);
-
---
--- Klíče pro tabulku `mul_redirect_links`
---
-ALTER TABLE `mul_redirect_links`
-  ADD PRIMARY KEY (`id`),
-  ADD KEY `idx_link_modifed` (`modified_date`),
-  ADD KEY `idx_old_url` (`old_url`(100));
-
---
--- Klíče pro tabulku `mul_revslider_css`
---
-ALTER TABLE `mul_revslider_css`
-  ADD PRIMARY KEY (`id`);
-
---
--- Klíče pro tabulku `mul_revslider_layer_animations`
---
-ALTER TABLE `mul_revslider_layer_animations`
-  ADD PRIMARY KEY (`id`);
-
---
--- Klíče pro tabulku `mul_revslider_settings`
---
-ALTER TABLE `mul_revslider_settings`
-  ADD PRIMARY KEY (`id`);
-
---
--- Klíče pro tabulku `mul_revslider_sliders`
---
-ALTER TABLE `mul_revslider_sliders`
-  ADD PRIMARY KEY (`id`);
-
---
--- Klíče pro tabulku `mul_revslider_slides`
---
-ALTER TABLE `mul_revslider_slides`
-  ADD PRIMARY KEY (`id`);
-
---
--- Klíče pro tabulku `mul_revslider_static_slides`
---
-ALTER TABLE `mul_revslider_static_slides`
-  ADD PRIMARY KEY (`id`);
-
---
--- Klíče pro tabulku `mul_rokcommon_configs`
---
-ALTER TABLE `mul_rokcommon_configs`
-  ADD PRIMARY KEY (`id`);
-
---
--- Klíče pro tabulku `mul_roksprocket_items`
---
-ALTER TABLE `mul_roksprocket_items`
-  ADD PRIMARY KEY (`id`),
-  ADD KEY `idx_module` (`module_id`),
-  ADD KEY `idx_module_order` (`module_id`,`order`);
-
---
--- Klíče pro tabulku `mul_schemas`
---
-ALTER TABLE `mul_schemas`
-  ADD PRIMARY KEY (`extension_id`,`version_id`);
-
---
--- Klíče pro tabulku `mul_session`
---
-ALTER TABLE `mul_session`
-  ADD PRIMARY KEY (`session_id`),
-  ADD KEY `userid` (`userid`),
-  ADD KEY `time` (`time`);
-
---
--- Klíče pro tabulku `mul_spmedia`
---
-ALTER TABLE `mul_spmedia`
-  ADD PRIMARY KEY (`id`);
-
---
--- Klíče pro tabulku `mul_sppagebuilder`
---
-ALTER TABLE `mul_sppagebuilder`
-  ADD PRIMARY KEY (`id`);
-
---
--- Klíče pro tabulku `mul_sppagebuilder_integrations`
---
-ALTER TABLE `mul_sppagebuilder_integrations`
-  ADD PRIMARY KEY (`id`);
-
---
--- Klíče pro tabulku `mul_spsimpleportfolio_items`
---
-ALTER TABLE `mul_spsimpleportfolio_items`
-  ADD PRIMARY KEY (`spsimpleportfolio_item_id`);
-
---
--- Klíče pro tabulku `mul_spsimpleportfolio_tags`
---
-ALTER TABLE `mul_spsimpleportfolio_tags`
-  ADD PRIMARY KEY (`spsimpleportfolio_tag_id`);
-
---
--- Klíče pro tabulku `mul_tags`
---
-ALTER TABLE `mul_tags`
-  ADD PRIMARY KEY (`id`),
-  ADD KEY `tag_idx` (`published`,`access`),
-  ADD KEY `idx_access` (`access`),
-  ADD KEY `idx_checkout` (`checked_out`),
-  ADD KEY `idx_left_right` (`lft`,`rgt`),
-  ADD KEY `idx_language` (`language`),
-  ADD KEY `idx_path` (`path`(100)),
-  ADD KEY `idx_alias` (`alias`(100));
-
---
--- Klíče pro tabulku `mul_template_styles`
---
-ALTER TABLE `mul_template_styles`
-  ADD PRIMARY KEY (`id`),
-  ADD KEY `idx_template` (`template`),
-  ADD KEY `idx_home` (`home`);
-
---
--- Klíče pro tabulku `mul_ucm_base`
---
-ALTER TABLE `mul_ucm_base`
-  ADD PRIMARY KEY (`ucm_id`),
-  ADD KEY `idx_ucm_item_id` (`ucm_item_id`),
-  ADD KEY `idx_ucm_type_id` (`ucm_type_id`),
-  ADD KEY `idx_ucm_language_id` (`ucm_language_id`);
-
---
--- Klíče pro tabulku `mul_ucm_content`
---
-ALTER TABLE `mul_ucm_content`
-  ADD PRIMARY KEY (`core_content_id`),
-  ADD KEY `tag_idx` (`core_state`,`core_access`),
-  ADD KEY `idx_access` (`core_access`),
-  ADD KEY `idx_language` (`core_language`),
-  ADD KEY `idx_modified_time` (`core_modified_time`),
-  ADD KEY `idx_created_time` (`core_created_time`),
-  ADD KEY `idx_core_modified_user_id` (`core_modified_user_id`),
-  ADD KEY `idx_core_checked_out_user_id` (`core_checked_out_user_id`),
-  ADD KEY `idx_core_created_user_id` (`core_created_user_id`),
-  ADD KEY `idx_core_type_id` (`core_type_id`),
-  ADD KEY `idx_alias` (`core_alias`(100)),
-  ADD KEY `idx_title` (`core_title`(100)),
-  ADD KEY `idx_content_type` (`core_type_alias`(100));
-
---
--- Klíče pro tabulku `mul_ucm_history`
---
-ALTER TABLE `mul_ucm_history`
-  ADD PRIMARY KEY (`version_id`),
-  ADD KEY `idx_ucm_item_id` (`ucm_type_id`,`ucm_item_id`),
-  ADD KEY `idx_save_date` (`save_date`);
-
---
--- Klíče pro tabulku `mul_updates`
---
-ALTER TABLE `mul_updates`
-  ADD PRIMARY KEY (`update_id`);
-
---
--- Klíče pro tabulku `mul_update_sites`
---
-ALTER TABLE `mul_update_sites`
-  ADD PRIMARY KEY (`update_site_id`);
-
---
--- Klíče pro tabulku `mul_update_sites_extensions`
---
-ALTER TABLE `mul_update_sites_extensions`
-  ADD PRIMARY KEY (`update_site_id`,`extension_id`);
-
---
--- Klíče pro tabulku `mul_usergroups`
---
-ALTER TABLE `mul_usergroups`
-  ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `idx_usergroup_parent_title_lookup` (`parent_id`,`title`),
-  ADD KEY `idx_usergroup_title_lookup` (`title`),
-  ADD KEY `idx_usergroup_adjacency_lookup` (`parent_id`),
-  ADD KEY `idx_usergroup_nested_set_lookup` (`lft`,`rgt`);
-
---
--- Klíče pro tabulku `mul_users`
---
-ALTER TABLE `mul_users`
-  ADD PRIMARY KEY (`id`),
-  ADD KEY `idx_block` (`block`),
-  ADD KEY `username` (`username`),
-  ADD KEY `email` (`email`),
-  ADD KEY `idx_name` (`name`(100));
-
---
--- Klíče pro tabulku `mul_user_keys`
---
-ALTER TABLE `mul_user_keys`
-  ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `series` (`series`),
-  ADD UNIQUE KEY `series_2` (`series`),
-  ADD UNIQUE KEY `series_3` (`series`),
-  ADD KEY `user_id` (`user_id`);
-
---
--- Klíče pro tabulku `mul_user_notes`
---
-ALTER TABLE `mul_user_notes`
-  ADD PRIMARY KEY (`id`),
-  ADD KEY `idx_user_id` (`user_id`),
-  ADD KEY `idx_category_id` (`catid`);
-
---
--- Klíče pro tabulku `mul_user_profiles`
---
-ALTER TABLE `mul_user_profiles`
-  ADD UNIQUE KEY `idx_user_id_profile_key` (`user_id`,`profile_key`);
-
---
--- Klíče pro tabulku `mul_user_usergroup_map`
---
-ALTER TABLE `mul_user_usergroup_map`
-  ADD PRIMARY KEY (`user_id`,`group_id`);
-
---
--- Klíče pro tabulku `mul_viewlevels`
---
-ALTER TABLE `mul_viewlevels`
-  ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `idx_assetgroup_title_lookup` (`title`);
-
---
--- Klíče pro tabulku `mul_wf_profiles`
---
-ALTER TABLE `mul_wf_profiles`
-  ADD PRIMARY KEY (`id`);
-
---
--- AUTO_INCREMENT pro tabulky
---
-
---
--- AUTO_INCREMENT pro tabulku `mul_ak_profiles`
---
-ALTER TABLE `mul_ak_profiles`
-  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
---
--- AUTO_INCREMENT pro tabulku `mul_ak_stats`
---
-ALTER TABLE `mul_ak_stats`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=20;
---
--- AUTO_INCREMENT pro tabulku `mul_assets`
---
-ALTER TABLE `mul_assets`
-  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'Primary Key', AUTO_INCREMENT=310;
---
--- AUTO_INCREMENT pro tabulku `mul_banners`
---
-ALTER TABLE `mul_banners`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
---
--- AUTO_INCREMENT pro tabulku `mul_banner_clients`
---
-ALTER TABLE `mul_banner_clients`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
---
--- AUTO_INCREMENT pro tabulku `mul_categories`
---
-ALTER TABLE `mul_categories`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=85;
---
--- AUTO_INCREMENT pro tabulku `mul_contact_details`
---
-ALTER TABLE `mul_contact_details`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
---
--- AUTO_INCREMENT pro tabulku `mul_content`
---
-ALTER TABLE `mul_content`
-  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=106;
---
--- AUTO_INCREMENT pro tabulku `mul_content_types`
---
-ALTER TABLE `mul_content_types`
-  MODIFY `type_id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=16;
---
--- AUTO_INCREMENT pro tabulku `mul_extensions`
---
-ALTER TABLE `mul_extensions`
-  MODIFY `extension_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10107;
---
--- AUTO_INCREMENT pro tabulku `mul_fields`
---
-ALTER TABLE `mul_fields`
-  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT;
---
--- AUTO_INCREMENT pro tabulku `mul_fields_groups`
---
-ALTER TABLE `mul_fields_groups`
-  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT;
---
--- AUTO_INCREMENT pro tabulku `mul_finder_filters`
---
-ALTER TABLE `mul_finder_filters`
-  MODIFY `filter_id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT;
---
--- AUTO_INCREMENT pro tabulku `mul_finder_links`
---
-ALTER TABLE `mul_finder_links`
-  MODIFY `link_id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT;
---
--- AUTO_INCREMENT pro tabulku `mul_finder_taxonomy`
---
-ALTER TABLE `mul_finder_taxonomy`
-  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT;
---
--- AUTO_INCREMENT pro tabulku `mul_finder_terms`
---
-ALTER TABLE `mul_finder_terms`
-  MODIFY `term_id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT;
---
--- AUTO_INCREMENT pro tabulku `mul_finder_types`
---
-ALTER TABLE `mul_finder_types`
-  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT;
---
--- AUTO_INCREMENT pro tabulku `mul_kunena_announcement`
---
-ALTER TABLE `mul_kunena_announcement`
-  MODIFY `id` int(3) NOT NULL AUTO_INCREMENT;
---
--- AUTO_INCREMENT pro tabulku `mul_kunena_attachments`
---
-ALTER TABLE `mul_kunena_attachments`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
---
--- AUTO_INCREMENT pro tabulku `mul_kunena_categories`
---
-ALTER TABLE `mul_kunena_categories`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
---
--- AUTO_INCREMENT pro tabulku `mul_kunena_keywords`
---
-ALTER TABLE `mul_kunena_keywords`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
---
--- AUTO_INCREMENT pro tabulku `mul_kunena_messages`
---
-ALTER TABLE `mul_kunena_messages`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
---
--- AUTO_INCREMENT pro tabulku `mul_kunena_polls`
---
-ALTER TABLE `mul_kunena_polls`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
---
--- AUTO_INCREMENT pro tabulku `mul_kunena_polls_options`
---
-ALTER TABLE `mul_kunena_polls_options`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
---
--- AUTO_INCREMENT pro tabulku `mul_kunena_ranks`
---
-ALTER TABLE `mul_kunena_ranks`
-  MODIFY `rank_id` mediumint(8) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
---
--- AUTO_INCREMENT pro tabulku `mul_kunena_smileys`
---
-ALTER TABLE `mul_kunena_smileys`
-  MODIFY `id` int(4) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=67;
---
--- AUTO_INCREMENT pro tabulku `mul_kunena_topics`
---
-ALTER TABLE `mul_kunena_topics`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
---
--- AUTO_INCREMENT pro tabulku `mul_kunena_users_banned`
---
-ALTER TABLE `mul_kunena_users_banned`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
---
--- AUTO_INCREMENT pro tabulku `mul_kunena_version`
---
-ALTER TABLE `mul_kunena_version`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
---
--- AUTO_INCREMENT pro tabulku `mul_languages`
---
-ALTER TABLE `mul_languages`
-  MODIFY `lang_id` int(11) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
---
--- AUTO_INCREMENT pro tabulku `mul_menu`
---
-ALTER TABLE `mul_menu`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=634;
---
--- AUTO_INCREMENT pro tabulku `mul_menu_types`
---
-ALTER TABLE `mul_menu_types`
-  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=20;
---
--- AUTO_INCREMENT pro tabulku `mul_messages`
---
-ALTER TABLE `mul_messages`
-  MODIFY `message_id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT;
---
--- AUTO_INCREMENT pro tabulku `mul_modules`
---
-ALTER TABLE `mul_modules`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=155;
---
--- AUTO_INCREMENT pro tabulku `mul_newsfeeds`
---
-ALTER TABLE `mul_newsfeeds`
-  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
---
--- AUTO_INCREMENT pro tabulku `mul_overrider`
---
-ALTER TABLE `mul_overrider`
-  MODIFY `id` int(10) NOT NULL AUTO_INCREMENT COMMENT 'Primary Key';
---
--- AUTO_INCREMENT pro tabulku `mul_postinstall_messages`
---
-ALTER TABLE `mul_postinstall_messages`
-  MODIFY `postinstall_message_id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=12;
---
--- AUTO_INCREMENT pro tabulku `mul_redirect_links`
---
-ALTER TABLE `mul_redirect_links`
-  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT;
---
--- AUTO_INCREMENT pro tabulku `mul_revslider_css`
---
-ALTER TABLE `mul_revslider_css`
-  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=45;
---
--- AUTO_INCREMENT pro tabulku `mul_revslider_layer_animations`
---
-ALTER TABLE `mul_revslider_layer_animations`
-  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
---
--- AUTO_INCREMENT pro tabulku `mul_revslider_settings`
---
-ALTER TABLE `mul_revslider_settings`
-  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT;
---
--- AUTO_INCREMENT pro tabulku `mul_revslider_sliders`
---
-ALTER TABLE `mul_revslider_sliders`
-  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
---
--- AUTO_INCREMENT pro tabulku `mul_revslider_slides`
---
-ALTER TABLE `mul_revslider_slides`
-  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=29;
---
--- AUTO_INCREMENT pro tabulku `mul_revslider_static_slides`
---
-ALTER TABLE `mul_revslider_static_slides`
-  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT;
---
--- AUTO_INCREMENT pro tabulku `mul_rokcommon_configs`
---
-ALTER TABLE `mul_rokcommon_configs`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
---
--- AUTO_INCREMENT pro tabulku `mul_roksprocket_items`
---
-ALTER TABLE `mul_roksprocket_items`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=22;
---
--- AUTO_INCREMENT pro tabulku `mul_spmedia`
---
-ALTER TABLE `mul_spmedia`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT;
---
--- AUTO_INCREMENT pro tabulku `mul_sppagebuilder`
---
-ALTER TABLE `mul_sppagebuilder`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=15;
---
--- AUTO_INCREMENT pro tabulku `mul_sppagebuilder_integrations`
---
-ALTER TABLE `mul_sppagebuilder_integrations`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT;
---
--- AUTO_INCREMENT pro tabulku `mul_spsimpleportfolio_items`
---
-ALTER TABLE `mul_spsimpleportfolio_items`
-  MODIFY `spsimpleportfolio_item_id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=19;
---
--- AUTO_INCREMENT pro tabulku `mul_spsimpleportfolio_tags`
---
-ALTER TABLE `mul_spsimpleportfolio_tags`
-  MODIFY `spsimpleportfolio_tag_id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
---
--- AUTO_INCREMENT pro tabulku `mul_tags`
---
-ALTER TABLE `mul_tags`
-  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
---
--- AUTO_INCREMENT pro tabulku `mul_template_styles`
---
-ALTER TABLE `mul_template_styles`
-  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;
---
--- AUTO_INCREMENT pro tabulku `mul_ucm_content`
---
-ALTER TABLE `mul_ucm_content`
-  MODIFY `core_content_id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT;
---
--- AUTO_INCREMENT pro tabulku `mul_ucm_history`
---
-ALTER TABLE `mul_ucm_history`
-  MODIFY `version_id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=333;
---
--- AUTO_INCREMENT pro tabulku `mul_updates`
---
-ALTER TABLE `mul_updates`
-  MODIFY `update_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=92;
---
--- AUTO_INCREMENT pro tabulku `mul_update_sites`
---
-ALTER TABLE `mul_update_sites`
-  MODIFY `update_site_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=33;
---
--- AUTO_INCREMENT pro tabulku `mul_usergroups`
---
-ALTER TABLE `mul_usergroups`
-  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'Primary Key', AUTO_INCREMENT=10;
---
--- AUTO_INCREMENT pro tabulku `mul_users`
---
-ALTER TABLE `mul_users`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=857;
---
--- AUTO_INCREMENT pro tabulku `mul_user_keys`
---
-ALTER TABLE `mul_user_keys`
-  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT;
---
--- AUTO_INCREMENT pro tabulku `mul_user_notes`
---
-ALTER TABLE `mul_user_notes`
-  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT;
---
--- AUTO_INCREMENT pro tabulku `mul_viewlevels`
---
-ALTER TABLE `mul_viewlevels`
-  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'Primary Key', AUTO_INCREMENT=7;
---
--- AUTO_INCREMENT pro tabulku `mul_wf_profiles`
---
-ALTER TABLE `mul_wf_profiles`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
