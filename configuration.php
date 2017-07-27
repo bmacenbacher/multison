@@ -1,5 +1,6 @@
 <?php
 class JConfig {
+	// comment
 	public $MetaAuthor = '1';
 	public $MetaDesc = '';
 	public $MetaKeys = '';
@@ -13,13 +14,13 @@ class JConfig {
 	public $captcha = '0';
 	public $cookie_domain = '';
 	public $cookie_path = '';
-	public $db = 'd168295_led';
+	public $db = 'multison';
 	public $dbprefix = 'mul_';
 	public $dbtype = 'mysqli';
 	public $debug = '0';
 	public $debug_lang = '0';
 	public $display_offline_message = '1';
-	public $editor = 'none';
+	public $editor = 'jce';
 	public $error_reporting = 'default';
 	public $feed_email = 'author';
 	public $feed_limit = '10';
@@ -33,11 +34,11 @@ class JConfig {
 	public $ftp_user = '';
 	public $gzip = '0';
 	public $helpurl = 'https://help.joomla.org/proxy?keyref=Help{major}{minor}:{keyref}&lang={langcode}';
-	public $host = 'wm112.wedos.net';
+	public $host = 'localhost';
 	public $lifetime = '15';
 	public $list_limit = '20';
-	public $live_site = 'http://multison.cz';
-	public $log_path = '/data/web/virtuals/168295/virtual/www/administrator/logs';
+	public $live_site = '';
+	public $log_path = 'C:/xampp/htdocs/multison/administrator/logs';
 	public $mailer = 'mail';
 	public $mailfrom = 'support@warptheme.com';
 	public $memcache_compress = '0';
@@ -49,7 +50,7 @@ class JConfig {
 	public $offline_message = 'This site is down for maintenance.<br /> Please check back again soon.';
 	public $offset = 'UTC';
 	public $offset_user = 'UTC';
-	public $password = 'WJQCnAcG';
+	public $password = '';
 	public $robots = '';
 	public $secret = 'ya8HT9m1qdrnIvNj4Do7X0r5mNdkFTmz';
 	public $sef = '1';
@@ -65,9 +66,9 @@ class JConfig {
 	public $smtpport = '25';
 	public $smtpsecure = 'none';
 	public $smtpuser = '';
-	public $tmp_path = '/data/web/virtuals/168295/virtual/www/tmp';
+	public $tmp_path = 'C:/xampp/htdocs/multison/tmp';
 	public $unicodeslugs = '0';
-	public $user = 'a168295_led';
+	public $user = 'root';
 	public $mailonline = '0';
 	public $memcached_persist = '1';
 	public $memcached_compress = '0';
